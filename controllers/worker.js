@@ -1,11 +1,11 @@
 const connectDB = require("../db/connection").pool;
 
-const checkName = require("./checker");
+const checkName = require("./checker").checkName;
 
 const getAllWorkers = async (req, res) => {
   connectDB.getConnection((err, connection) => {
     if (err) {
-      console.log("Can not connect to database");
+      console.log("Cannot connect to database");
       throw err;
     }
     console.log("Connection established");
@@ -36,7 +36,7 @@ const getWorker = async (req, res) => {
 
   connectDB.getConnection((err, connection) => {
     if (err) {
-      console.log("Can not connect to database");
+      console.log("Cannot connect to database");
       throw err;
     }
     console.log("Connection established");
@@ -81,7 +81,7 @@ const addWorker = async (req, res) => {
     if (freeName) {
       connectDB.getConnection((err, connection) => {
         if (err) {
-          console.log("Can not connect to database");
+          console.log("Cannot connect to database");
           throw err;
         }
         console.log("Connection established");
@@ -106,7 +106,7 @@ const addWorker = async (req, res) => {
         );
       });
     } else {
-      res.status(404).json("Igralec že obstaja");
+      res.status(409).json("Igralec že obstaja");
     }
   } else {
     res.status(400).json("Bad request");
@@ -116,37 +116,42 @@ const addWorker = async (req, res) => {
 const deleteWorker = async (req, res) => {
   const { ime: name } = req.params;
 
-  connectDB.getConnection((err, connection) => {
-    if (err) {
-      console.log("Can not connect to database");
-      throw err;
-    }
-    console.log("Connection established");
-    connection.query(
-      "DELETE FROM delavec WHERE ime = ?",
-      [name],
-      (err, result) => {
+  if (name) {
+    const freeName = await checkName(name);
+    if (!freeName) {
+      connectDB.getConnection((err, connection) => {
         if (err) {
-          console.log("Server error: ", err);
-          res.status(500);
+          console.log("Cannot connect to database");
+          throw err;
         }
-        console.log(result);
-        if (result.affectedRows === 0) {
-          res.status(404).json("Not found");
-        } else {
-          console.log(result);
-          res.status(204).json({ result });
+        console.log("Connection established");
+        connection.query(
+          "DELETE FROM delavec WHERE ime = ?",
+          [name],
+          (err, result) => {
+            if (err) {
+              console.log("Server error: ", err);
+              res.status(500);
+            }
+            console.log(result);
 
-          connection.release();
-          if (err) {
-            console.log("Can not release connection to database");
-            throw err;
+            res.status(204).json({ result });
+
+            connection.release();
+            if (err) {
+              console.log("Can not release connection to database");
+              throw err;
+            }
+            console.log("Connection released.");
           }
-          console.log("Connection released.");
-        }
-      }
-    );
-  });
+        );
+      });
+    } else {
+      res.status(404).json("Igralec ne obstaja");
+    }
+  } else {
+    res.status(400).json("Bad request");
+  }
 };
 
 const updateWorker = async (req, res) => {
@@ -156,13 +161,13 @@ const updateWorker = async (req, res) => {
     password: req.body.geslo,
   };
   const { ime: name } = req.params;
-  console.log(data);
+  console.log(name);
   if (name && data.lastname && data.email && data.password) {
     const freeName = await checkName(name);
     if (!freeName) {
       connectDB.getConnection((err, connection) => {
         if (err) {
-          console.log("Can not connect to database");
+          console.log("Cannot connect to database");
           throw err;
         }
         console.log("Connection established");
