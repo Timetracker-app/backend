@@ -1,9 +1,14 @@
 const connectDB = require("../db/connection").pool;
 
 const checkName = require("./checker").checkName;
-const checkWorkplaceID = require("./checker").checkWorkplaceID;
-const checkProjectID = require("./checker").checkProjectID;
+const checkWorkplace = require("./checker").checkWorkplace;
+const checkProject = require("./checker").checkProject;
 const checkWorkID = require("./checker").checkWorkID;
+
+const getProjectTime = require("./time").getProjectTime;
+const updateProjectTime = require("./time").updateProjectTime;
+const getWorkplaceTime = require("./time").getWorkplaceTime;
+const updateWorkplaceTime = require("./time").updateWorkplaceTime;
 
 const getAllWorks = async (req, res) => {
   connectDB.getConnection((err, connection) => {
@@ -40,6 +45,7 @@ const getWorks = async (req, res) => {
     start_time: req.body.zacetni_cas,
     end_time: req.body.koncni_cas,
   };
+  console.log(data.start_time);
 
   if (
     typeof data.worker === "string" &&
@@ -54,7 +60,7 @@ const getWorks = async (req, res) => {
         throw err;
       }
       connection.query(
-        "SELECT * FROM delo WHERE (ime = ? OR ? = '') AND (projekt = ? OR ? = '') AND (stroj = ? OR ? = '') AND (zacetni_cas >= STR_TO_DATE(?, '%m-%d-%Y %H:%i:%s') OR ? = '') AND (koncni_cas <= STR_TO_DATE(?, '%m-%d-%Y %H:%i:%s') OR ? = '');",
+        "SELECT * FROM delo WHERE (ime = ? OR ? = '') AND (projekt = ? OR ? = '') AND (stroj = ? OR ? = '') AND (zacetni_cas >= STR_TO_DATE(?, '%Y-%m-%d %H:%i:%s') OR ? = '') AND (koncni_cas <= STR_TO_DATE(?, '%Y-%m-%d %H:%i:%s') OR ? = '');",
         [
           data.worker,
           data.worker,
@@ -95,44 +101,6 @@ const getWorks = async (req, res) => {
     res.status(400).json("Bad request");
   }
 };
-/*
-const getWork = async (req, res) => {
-  const { IDdela: workID } = req.params;
-
-  connectDB.getConnection((err, connection) => {
-    if (err) {
-      console.log("Cannot connect to database");
-      throw err;
-    }
-    connection.query(
-      "SELECT IDdela, ime, projekt, stroj, zacetni_cas, koncni_cas FROM delo WHERE IDdela = ?",
-      [workID],
-      (err, result) => {
-        if (err) {
-          console.log("Server error");
-          res.status(500);
-          throw err;
-        }
-
-        if (result.length === 0) {
-          res.status(404).json("Not found");
-        } else {
-          console.log("Connection established");
-          console.log(result);
-          res.status(200).json({ result });
-
-          connection.release();
-          if (err) {
-            console.log("Can not release connection to database");
-            throw err;
-          }
-          console.log("Connection released.");
-        }
-      }
-    );
-  });
-};
-*/
 
 const addWork = async (req, res) => {
   const data = {
@@ -151,44 +119,99 @@ const addWork = async (req, res) => {
     data.end_time
   ) {
     const workerID = await checkName(data.worker);
-    const workplaceID = await checkWorkplaceID(data.workplace);
-    const projectID = await checkProjectID(data.project);
+    const workplaceCheck = await checkWorkplace(data.workplace);
+    const projectCheck = await checkProject(data.project);
 
     if (!workerID) {
-      if (!workplaceID) {
-        if (!projectID) {
-          connectDB.getConnection((err, connection) => {
-            if (err) {
-              console.log("Cannot connect to database");
-              throw err;
-            }
-            console.log("Connection established");
-            connection.query(
-              "INSERT INTO delo (ime, projekt, stroj, zacetni_cas, koncni_cas) VALUES (?, ?, ?, ?, ?)",
-              [
-                data.worker,
-                data.project,
-                data.workplace,
-                data.start_time,
-                data.end_time,
-              ],
-              (err, result) => {
+      if (workplaceCheck.length !== 0) {
+        if (projectCheck.length !== 0) {
+          if (projectCheck[0].status === 1) {
+            if (workplaceCheck[0].status === 1) {
+              connectDB.getConnection((err, connection) => {
                 if (err) {
-                  console.log("Server error");
-                  res.status(500);
+                  console.log("Cannot connect to database");
                   throw err;
                 }
-                res.status(201).json({ data });
+                console.log("Connection established");
+                connection.query(
+                  "INSERT INTO delo (ime, projekt, stroj, zacetni_cas, koncni_cas) VALUES (?, ?, ?, ?, ?)",
+                  [
+                    data.worker,
+                    data.project,
+                    data.workplace,
+                    data.start_time,
+                    data.end_time,
+                  ],
+                  (err, result) => {
+                    if (err) {
+                      console.log("Server error");
+                      res.status(500);
+                      throw err;
+                    }
+                    res.status(201).json({ data });
 
-                connection.release();
-                if (err) {
-                  console.log("Can not release connection to database");
-                  throw err;
-                }
-                console.log("Connection released.");
-              }
-            );
-          });
+                    connection.release();
+                    if (err) {
+                      console.log("Can not release connection to database");
+                      throw err;
+                    }
+                    console.log("Connection released.");
+
+                    // Updating project time
+                    let timeToUpdateProject;
+
+                    getProjectTime(data.project)
+                      .then((time) => {
+                        console.log(time);
+                        timeToUpdateProject = time;
+                      })
+                      .catch((error) => {
+                        console.error("Error getting time: ", error);
+                      })
+                      .then(() => {
+                        // Update time
+                        updateProjectTime(data.project, timeToUpdateProject)
+                          .then((succes) => {
+                            console.log(succes);
+                          })
+                          .catch((error) => {
+                            console.log("Error updating time: ", error);
+                          });
+                      });
+
+                    // Updating workplace time
+                    let timeToUpdateWorkplace;
+
+                    getWorkplaceTime(data.workplace)
+                      .then((time) => {
+                        console.log(time);
+                        timeToUpdateWorkplace = time;
+                      })
+                      .catch((error) => {
+                        console.error("Error getting time: ", error);
+                      })
+                      .then(() => {
+                        // Update time
+                        updateWorkplaceTime(
+                          data.workplace,
+                          timeToUpdateWorkplace
+                        )
+                          .then((succes) => {
+                            console.log(succes);
+                          })
+                          .catch((error) => {
+                            console.log("Error updating time: ", error);
+                          });
+                      });
+                  }
+                );
+              });
+            } else {
+              res.status(409).json("Workplace is inactive!");
+            }
+          } else {
+            res.status(409).json("Project is inactive!");
+          }
         } else {
           res.status(404).json("Project does not exist!");
         }
@@ -223,8 +246,8 @@ const updateWork = async (req, res) => {
   ) {
     const workId = await checkWorkID(workID);
     const workerID = await checkName(data.worker);
-    const workplaceID = await checkWorkplaceID(data.workplace);
-    const projectID = await checkProjectID(data.project);
+    const workplaceID = await checkWorkplace(data.workplace);
+    const projectID = await checkProject(data.project);
 
     if (!workId) {
       if (!workerID) {
@@ -260,6 +283,28 @@ const updateWork = async (req, res) => {
                     throw err;
                   }
                   console.log("Connection released.");
+
+                  // Get time
+                  let timeToUpdate;
+
+                  getProjectTime(data.project)
+                    .then((time) => {
+                      console.log(time);
+                      timeToUpdate = time;
+                    })
+                    .catch((error) => {
+                      console.error("Error getting time: ", error);
+                    })
+                    .then(() => {
+                      // Update time
+                      updateProjectTime(data.project, timeToUpdate)
+                        .then((succes) => {
+                          console.log(succes);
+                        })
+                        .catch((error) => {
+                          console.log("Error updating time: ", error);
+                        });
+                    });
                 }
               );
             });
@@ -322,7 +367,6 @@ const deleteWork = async (req, res) => {
 };
 module.exports = {
   getAllWorks,
-  //getWork,
   getWorks,
   addWork,
   updateWork,

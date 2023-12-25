@@ -1,6 +1,6 @@
 const connectDB = require("../db/connection").pool;
 
-const checkWorkplaceID = require("./checker").checkWorkplaceID;
+const checkWorkplace = require("./checker").checkWorkplace;
 
 const getAllWorkplaces = async (req, res) => {
   connectDB.getConnection((err, connection) => {
@@ -31,51 +31,14 @@ const getAllWorkplaces = async (req, res) => {
   });
 };
 
-const getWorkplace = async (req, res) => {
-  const { stroj: workplaceID } = req.params;
-
-  connectDB.getConnection((err, connection) => {
-    if (err) {
-      console.log("Cannot connect to database");
-      throw err;
-    }
-    connection.query(
-      "SELECT stroj, cas, status FROM delovno_mesto WHERE stroj = ?",
-      [workplaceID],
-      (err, result) => {
-        if (err) {
-          console.log("Server error");
-          res.status(500);
-          throw err;
-        }
-
-        if (result.length === 0) {
-          res.status(404).json("Not found");
-        } else {
-          console.log("Connection established");
-          console.log(result);
-          res.status(200).json({ result });
-
-          connection.release();
-          if (err) {
-            console.log("Cannot release connection to database");
-            throw err;
-          }
-          console.log("Connection released.");
-        }
-      }
-    );
-  });
-};
-
 const addWorkplace = async (req, res) => {
   const data = {
     workplaceID: req.body.stroj,
   };
   console.log(data);
   if (data.workplaceID) {
-    const freeID = await checkWorkplaceID(data.workplaceID);
-    if (freeID) {
+    const freeID = await checkWorkplace(data.workplaceID);
+    if (freeID.length === 0) {
       connectDB.getConnection((err, connection) => {
         if (err) {
           console.log("Cannot connect to database");
@@ -122,8 +85,8 @@ const updateWorkplace = async (req, res) => {
     (data.status === 0 || data.status === 1) &&
     data.time !== ""
   ) {
-    const freeID = await checkWorkplaceID(workplaceID);
-    if (!freeID) {
+    const freeID = await checkWorkplace(workplaceID);
+    if (freeID.length !== 0) {
       connectDB.getConnection((err, connection) => {
         if (err) {
           console.log("Cannot connect to database");
@@ -162,8 +125,8 @@ const deleteWorkplace = async (req, res) => {
   const { stroj: workplaceID } = req.params;
 
   if (workplaceID) {
-    const freeID = await checkWorkplaceID(workplaceID);
-    if (!freeID) {
+    const freeID = await checkWorkplace(workplaceID);
+    if (freeID.length !== 0) {
       connectDB.getConnection((err, connection) => {
         if (err) {
           console.log("Cannot connect to database");
@@ -201,7 +164,6 @@ const deleteWorkplace = async (req, res) => {
 
 module.exports = {
   getAllWorkplaces,
-  getWorkplace,
   addWorkplace,
   updateWorkplace,
   deleteWorkplace,

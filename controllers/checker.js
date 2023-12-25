@@ -10,7 +10,7 @@ async function checkName(name) {
       console.log("Connection established");
 
       connection.query(
-        "SELECT ime, priimek, email FROM delavec WHERE ime = ?",
+        "SELECT ime FROM delavec WHERE ime = ?",
         [name],
         (err, result) => {
           if (err) {
@@ -33,7 +33,7 @@ async function checkName(name) {
   });
 }
 
-async function checkWorkplaceID(workplaceID) {
+async function checkWorkplace(workplaceID) {
   return new Promise((resolve, reject) => {
     connectDB.getConnection((err, connection) => {
       if (err) {
@@ -43,7 +43,7 @@ async function checkWorkplaceID(workplaceID) {
       console.log("Connection established");
 
       connection.query(
-        "SELECT stroj, cas, status FROM delovno_mesto WHERE stroj = ?",
+        "SELECT stroj, status FROM delovno_mesto WHERE stroj = ?",
         [workplaceID],
         (err, result) => {
           if (err) {
@@ -53,20 +53,22 @@ async function checkWorkplaceID(workplaceID) {
           connection.release();
           console.log("Connection released.");
 
+          resolve(result);
+          /*
           if (result.length === 0) {
             console.log("Workplace ID is free to use.");
             resolve(true);
           } else {
             console.log("Workplace ID already exists!");
             resolve(false);
-          }
+          }*/
         }
       );
     });
   });
 }
 
-async function checkProjectID(projectID) {
+async function checkProject(projectID) {
   return new Promise((resolve, reject) => {
     connectDB.getConnection((err, connection) => {
       if (err) {
@@ -76,7 +78,7 @@ async function checkProjectID(projectID) {
       console.log("Connection established");
 
       connection.query(
-        "SELECT projekt, cas, status FROM narocilo WHERE projekt = ?",
+        "SELECT projekt, status FROM narocilo WHERE projekt = ?",
         [projectID],
         (err, result) => {
           if (err) {
@@ -86,13 +88,15 @@ async function checkProjectID(projectID) {
           connection.release();
           console.log("Connection released.");
 
+          resolve(result);
+          /*
           if (result.length === 0) {
             console.log("Project ID is free to use.");
             resolve(true);
           } else {
             console.log("Project ID already exists!");
             resolve(false);
-          }
+          }*/
         }
       );
     });
@@ -109,7 +113,7 @@ async function checkWorkID(workID) {
       console.log("Connection established");
 
       connection.query(
-        "SELECT * FROM delo WHERE IDdela = ?",
+        "SELECT IDdela FROM delo WHERE IDdela = ?",
         [workID],
         (err, result) => {
           if (err) {
@@ -132,4 +136,9 @@ async function checkWorkID(workID) {
   });
 }
 
-module.exports = { checkName, checkWorkplaceID, checkProjectID, checkWorkID };
+module.exports = {
+  checkName,
+  checkWorkplace,
+  checkProject,
+  checkWorkID,
+};
