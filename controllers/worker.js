@@ -1,4 +1,5 @@
 const connectDB = require("../db/connection").pool;
+const bcrypt = require("bcryptjs");
 
 const checkName = require("./checker").checkName;
 
@@ -75,10 +76,12 @@ const addWorker = async (req, res) => {
     email: req.body.email,
     password: req.body.geslo,
   };
-  console.log(data);
   if (data.name && data.lastname && data.email && data.password) {
     const freeName = await checkName(data.name);
     if (freeName) {
+      const salt = await bcrypt.genSalt(10);
+      const hashedPass = await bcrypt.hash(data.password, salt);
+
       connectDB.getConnection((err, connection) => {
         if (err) {
           console.log("Cannot connect to database");
@@ -87,14 +90,14 @@ const addWorker = async (req, res) => {
         console.log("Connection established");
         connection.query(
           "INSERT INTO delavec (ime, priimek, email, geslo) VALUES (?, ?, ?, ?)",
-          [data.name, data.lastname, data.email, data.password],
+          [data.name, data.lastname, data.email, hashedPass],
           (err, result) => {
             if (err) {
               console.log("Server error");
               res.status(500);
               throw err;
             }
-            res.status(201).json({ data });
+            res.status(201).json("User " + data.name + " added");
 
             connection.release();
             if (err) {
@@ -106,7 +109,7 @@ const addWorker = async (req, res) => {
         );
       });
     } else {
-      res.status(409).json("Igralec že obstaja");
+      res.status(409).json("Worker already exists!");
     }
   } else {
     res.status(400).json("Bad request");
@@ -135,7 +138,7 @@ const deleteWorker = async (req, res) => {
             }
             console.log(result);
 
-            res.status(204).json({ result });
+            res.status(204).json("Worker deleted!");
 
             connection.release();
             if (err) {
@@ -147,7 +150,7 @@ const deleteWorker = async (req, res) => {
         );
       });
     } else {
-      res.status(404).json("Igralec ne obstaja");
+      res.status(404).json("Worker does not exist!");
     }
   } else {
     res.status(400).json("Bad request");
@@ -165,6 +168,9 @@ const updateWorker = async (req, res) => {
   if (name && data.lastname && data.email && data.password) {
     const freeName = await checkName(name);
     if (!freeName) {
+      const salt = await bcrypt.genSalt(10);
+      const hashedPass = await bcrypt.hash(data.password, salt);
+
       connectDB.getConnection((err, connection) => {
         if (err) {
           console.log("Cannot connect to database");
@@ -173,7 +179,7 @@ const updateWorker = async (req, res) => {
         console.log("Connection established");
         connection.query(
           "UPDATE delavec SET priimek = ?, email = ?, geslo= ? WHERE ime = ?",
-          [data.lastname, data.email, data.password, name],
+          [data.lastname, data.email, hashedPass, name],
           (err, result) => {
             if (err) {
               console.log("Server error");
@@ -192,7 +198,7 @@ const updateWorker = async (req, res) => {
         );
       });
     } else {
-      res.status(404).json("Igralec ne obstaja");
+      res.status(404).json("Worker does not exist!");
     }
   } else {
     res.status(400).json("Bad request");
