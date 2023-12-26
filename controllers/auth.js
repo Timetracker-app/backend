@@ -20,7 +20,7 @@ const login = async (req, res) => {
           connection.query(
             "SELECT ime, priimek, email, geslo FROM delavec WHERE email = ?",
             [data.email],
-            async (err, result) => {
+            (err, result) => {
               if (err) {
                 console.log("Server error");
                 res.status(500);
