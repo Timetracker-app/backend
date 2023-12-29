@@ -33,6 +33,39 @@ async function checkName(name) {
   });
 }
 
+async function checkEmail(email) {
+  return new Promise((resolve, reject) => {
+    connectDB.getConnection((err, connection) => {
+      if (err) {
+        console.log("Can not connect to database");
+        reject(err);
+      }
+      console.log("Connection established");
+
+      connection.query(
+        "SELECT email FROM delavec WHERE email = ?",
+        [email],
+        (err, result) => {
+          if (err) {
+            console.log("Error in query");
+            reject(err);
+          }
+          connection.release();
+          console.log("Connection released.");
+
+          if (result.length === 0) {
+            console.log("Email is free to use.");
+            resolve(true);
+          } else {
+            console.log("Email already exists!");
+            resolve(false);
+          }
+        }
+      );
+    });
+  });
+}
+
 async function checkWorkplace(workplaceID) {
   return new Promise((resolve, reject) => {
     connectDB.getConnection((err, connection) => {
@@ -54,14 +87,6 @@ async function checkWorkplace(workplaceID) {
           console.log("Connection released.");
 
           resolve(result);
-          /*
-          if (result.length === 0) {
-            console.log("Workplace ID is free to use.");
-            resolve(true);
-          } else {
-            console.log("Workplace ID already exists!");
-            resolve(false);
-          }*/
         }
       );
     });
@@ -89,14 +114,6 @@ async function checkProject(projectID) {
           console.log("Connection released.");
 
           resolve(result);
-          /*
-          if (result.length === 0) {
-            console.log("Project ID is free to use.");
-            resolve(true);
-          } else {
-            console.log("Project ID already exists!");
-            resolve(false);
-          }*/
         }
       );
     });
@@ -113,7 +130,7 @@ async function checkWorkID(workID) {
       console.log("Connection established");
 
       connection.query(
-        "SELECT IDdela FROM delo WHERE IDdela = ?",
+        "SELECT * FROM delo WHERE IDdela = ?",
         [workID],
         (err, result) => {
           if (err) {
@@ -123,13 +140,7 @@ async function checkWorkID(workID) {
           connection.release();
           console.log("Connection released.");
 
-          if (result.length === 0) {
-            console.log("Work ID is free to use.");
-            resolve(true);
-          } else {
-            console.log("Work ID already exists!");
-            resolve(false);
-          }
+          resolve(result);
         }
       );
     });
@@ -138,6 +149,7 @@ async function checkWorkID(workID) {
 
 module.exports = {
   checkName,
+  checkEmail,
   checkWorkplace,
   checkProject,
   checkWorkID,

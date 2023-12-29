@@ -2,6 +2,7 @@ const connectDB = require("../db/connection").pool;
 const bcrypt = require("bcryptjs");
 
 const checkName = require("./checker").checkName;
+const checkEmail = require("./checker").checkEmail;
 
 const getAllWorkers = async (req, res) => {
   connectDB.getConnection((err, connection) => {
@@ -78,36 +79,41 @@ const addWorker = async (req, res) => {
   };
   if (data.name && data.lastname && data.email && data.password) {
     const freeName = await checkName(data.name);
+    const freeEmail = await checkEmail(data.email);
     if (freeName) {
-      const salt = await bcrypt.genSalt(10);
-      const hashedPass = await bcrypt.hash(data.password, salt);
+      if (freeEmail) {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPass = await bcrypt.hash(data.password, salt);
 
-      connectDB.getConnection((err, connection) => {
-        if (err) {
-          console.log("Cannot connect to database");
-          throw err;
-        }
-        console.log("Connection established");
-        connection.query(
-          "INSERT INTO delavec (ime, priimek, email, geslo) VALUES (?, ?, ?, ?)",
-          [data.name, data.lastname, data.email, hashedPass],
-          (err, result) => {
-            if (err) {
-              console.log("Server error");
-              res.status(500);
-              throw err;
-            }
-            res.status(201).json("User " + data.name + " added");
-
-            connection.release();
-            if (err) {
-              console.log("Can not release connection to database");
-              throw err;
-            }
-            console.log("Connection released.");
+        connectDB.getConnection((err, connection) => {
+          if (err) {
+            console.log("Cannot connect to database");
+            throw err;
           }
-        );
-      });
+          console.log("Connection established");
+          connection.query(
+            "INSERT INTO delavec (ime, priimek, email, geslo) VALUES (?, ?, ?, ?)",
+            [data.name, data.lastname, data.email, hashedPass],
+            (err, result) => {
+              if (err) {
+                console.log("Server error");
+                res.status(500);
+                throw err;
+              }
+              res.status(201).json("User " + data.name + " added");
+
+              connection.release();
+              if (err) {
+                console.log("Can not release connection to database");
+                throw err;
+              }
+              console.log("Connection released.");
+            }
+          );
+        });
+      } else {
+        res.status(409).json("Email already exists!");
+      }
     } else {
       res.status(409).json("Worker already exists!");
     }
@@ -167,36 +173,42 @@ const updateWorker = async (req, res) => {
   console.log(name);
   if (name && data.lastname && data.email && data.password) {
     const freeName = await checkName(name);
+    const freeEmail = await checkEmail(data.email);
+
     if (!freeName) {
-      const salt = await bcrypt.genSalt(10);
-      const hashedPass = await bcrypt.hash(data.password, salt);
+      if (freeEmail) {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPass = await bcrypt.hash(data.password, salt);
 
-      connectDB.getConnection((err, connection) => {
-        if (err) {
-          console.log("Cannot connect to database");
-          throw err;
-        }
-        console.log("Connection established");
-        connection.query(
-          "UPDATE delavec SET priimek = ?, email = ?, geslo= ? WHERE ime = ?",
-          [data.lastname, data.email, hashedPass, name],
-          (err, result) => {
-            if (err) {
-              console.log("Server error");
-              res.status(500);
-              throw err;
-            }
-            res.status(204).json({ data });
-
-            connection.release();
-            if (err) {
-              console.log("Can not release connection to database");
-              throw err;
-            }
-            console.log("Connection released.");
+        connectDB.getConnection((err, connection) => {
+          if (err) {
+            console.log("Cannot connect to database");
+            throw err;
           }
-        );
-      });
+          console.log("Connection established");
+          connection.query(
+            "UPDATE delavec SET priimek = ?, email = ?, geslo= ? WHERE ime = ?",
+            [data.lastname, data.email, hashedPass, name],
+            (err, result) => {
+              if (err) {
+                console.log("Server error");
+                res.status(500);
+                throw err;
+              }
+              res.status(204).json({ data });
+
+              connection.release();
+              if (err) {
+                console.log("Can not release connection to database");
+                throw err;
+              }
+              console.log("Connection released.");
+            }
+          );
+        });
+      } else {
+        res.status(409).json("Email already exists!");
+      }
     } else {
       res.status(404).json("Worker does not exist!");
     }

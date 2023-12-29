@@ -5,10 +5,8 @@ const checkWorkplace = require("./checker").checkWorkplace;
 const checkProject = require("./checker").checkProject;
 const checkWorkID = require("./checker").checkWorkID;
 
-const getProjectTime = require("./time").getProjectTime;
-const updateProjectTime = require("./time").updateProjectTime;
-const getWorkplaceTime = require("./time").getWorkplaceTime;
-const updateWorkplaceTime = require("./time").updateWorkplaceTime;
+const updateProjectTime = require("./timeHandler").updateProjectTime;
+const updateWorkplaceTime = require("./timeHandler").updateWorkplaceTime;
 
 const getAllWorks = async (req, res) => {
   connectDB.getConnection((err, connection) => {
@@ -157,20 +155,51 @@ const addWork = async (req, res) => {
                     }
                     console.log("Connection released.");
 
+                    const dataTimeDiff =
+                      new Date(data.end_time) - new Date(data.start_time);
+
+                    const type = "add";
+
+                    updateProjectTime(data.project, dataTimeDiff, type)
+                      .then(() => {
+                        console.log("Project time updating...");
+                      })
+                      .catch((error) => {
+                        console.log("Error updating time: ", error);
+                      })
+                      .then(() => {
+                        updateWorkplaceTime(data.workplace, dataTimeDiff, type)
+                          .then(() => {
+                            console.log("Workplace time updating...");
+                          })
+                          .catch((error) => {
+                            console.log("Error updating time: ", error);
+                          });
+                      });
+
+                    /*
                     // Updating project time
-                    let timeToUpdateProject;
+                    let currentProjectTime;
 
                     getProjectTime(data.project)
                       .then((time) => {
                         console.log(time);
-                        timeToUpdateProject = time;
+                        currentProjectTime = time;
                       })
                       .catch((error) => {
                         console.error("Error getting time: ", error);
                       })
                       .then(() => {
                         // Update time
-                        updateProjectTime(data.project, timeToUpdateProject)
+                        const type = "add";
+
+                        updateProjectTime(
+                          data.project,
+                          currentProjectTime,
+                          data.end_time,
+                          data.start_time,
+                          type
+                        )
                           .then((succes) => {
                             console.log(succes);
                           })
@@ -202,7 +231,7 @@ const addWork = async (req, res) => {
                           .catch((error) => {
                             console.log("Error updating time: ", error);
                           });
-                      });
+                      });*/
                   }
                 );
               });
@@ -237,22 +266,31 @@ const updateWork = async (req, res) => {
   const { IDdela: workID } = req.params;
   console.log(workID);
   if (
-    (workID,
+    workID &&
     data.worker &&
-      data.project &&
-      data.workplace &&
-      data.start_time &&
-      data.end_time)
+    data.project &&
+    data.workplace &&
+    data.start_time &&
+    data.end_time
   ) {
-    const workId = await checkWorkID(workID);
+    const freeID = await checkWorkID(workID);
     const workerID = await checkName(data.worker);
     const workplaceID = await checkWorkplace(data.workplace);
     const projectID = await checkProject(data.project);
 
-    if (!workId) {
+    if (freeID.length !== 0) {
       if (!workerID) {
-        if (!workplaceID) {
-          if (!projectID) {
+        if (workplaceID.length !== 0) {
+          if (projectID.length !== 0) {
+            const oldData = {
+              worker: freeID[0].ime,
+              project: freeID[0].projekt,
+              workplace: freeID[0].stroj,
+              start_time: freeID[0].zacetni_cas,
+              end_time: freeID[0].koncni_cas,
+            };
+            console.log(oldData);
+
             connectDB.getConnection((err, connection) => {
               if (err) {
                 console.log("Cannot connect to database");
@@ -284,27 +322,75 @@ const updateWork = async (req, res) => {
                   }
                   console.log("Connection released.");
 
-                  // Get time
-                  let timeToUpdate;
+                  const dataTimeDiff =
+                    new Date(data.end_time) - new Date(data.start_time);
+                  const oldDataTimeDiff =
+                    new Date(oldData.end_time) - new Date(oldData.start_time);
 
-                  getProjectTime(data.project)
-                    .then((time) => {
-                      console.log(time);
-                      timeToUpdate = time;
-                    })
-                    .catch((error) => {
-                      console.error("Error getting time: ", error);
-                    })
-                    .then(() => {
-                      // Update time
-                      updateProjectTime(data.project, timeToUpdate)
-                        .then((succes) => {
-                          console.log(succes);
-                        })
-                        .catch((error) => {
-                          console.log("Error updating time: ", error);
-                        });
-                    });
+                  updateProjectAndWorkplaceTime();
+
+                  async function updateProjectAndWorkplaceTime() {
+                    try {
+                      await updateProjectTime(
+                        data.project,
+                        dataTimeDiff,
+                        "add"
+                      );
+                      console.log("Project time updating...");
+
+                      await updateWorkplaceTime(
+                        data.workplace,
+                        dataTimeDiff,
+                        "add"
+                      );
+                      console.log("Workplace time updating...");
+
+                      await updateProjectTime(
+                        oldData.project,
+                        oldDataTimeDiff,
+                        "substract"
+                      );
+                      console.log("Project time subtracting...");
+
+                      await updateWorkplaceTime(
+                        oldData.workplace,
+                        oldDataTimeDiff,
+                        "substract"
+                      );
+                      console.log("Workplace time subtracting...");
+                    } catch (error) {
+                      console.log("Error updating time: ", error);
+                    }
+                  }
+
+                  /*
+                  if (dataTimeDiff !== oldDataTimeDiff) {
+                    if (oldDataTimeDiff > dataTimeDiff) {
+                      var type = "substract";
+                      var timeDiff = oldDataTimeDiff - dataTimeDiff;
+                    } else {
+                      var type = "add";
+                      var timeDiff = dataTimeDiff - oldDataTimeDiff;
+                    }
+                    updateProjectTime(data.project, timeDiff, type)
+                      .then(() => {
+                        console.log("Project time updating...");
+                      })
+                      .catch((error) => {
+                        console.log("Error updating time: ", error);
+                      })
+                      .then(() => {
+                        updateWorkplaceTime(data.workplace, timeDiff, type)
+                          .then(() => {
+                            console.log("Workplace time updating...");
+                          })
+                          .catch((error) => {
+                            console.log("Error updating time: ", error);
+                          });
+                      });
+                  } else {
+                    console.log("Time is not different than before.");
+                  }*/
                 }
               );
             });
@@ -330,7 +416,16 @@ const deleteWork = async (req, res) => {
 
   if (workID) {
     const freeID = await checkWorkID(workID);
-    if (!freeID) {
+
+    if (freeID !== 0) {
+      const data = {
+        worker: freeID[0].ime,
+        project: freeID[0].projekt,
+        workplace: freeID[0].stroj,
+        start_time: freeID[0].zacetni_cas,
+        end_time: freeID[0].koncni_cas,
+      };
+      console.log(data);
       connectDB.getConnection((err, connection) => {
         if (err) {
           console.log("Cannot connect to database");
@@ -355,6 +450,28 @@ const deleteWork = async (req, res) => {
               throw err;
             }
             console.log("Connection released.");
+
+            const dataTimeDiff =
+              new Date(data.end_time) - new Date(data.start_time);
+
+            const type = "substract";
+
+            updateProjectTime(data.project, dataTimeDiff, type)
+              .then(() => {
+                console.log("Project time updating...");
+              })
+              .catch((error) => {
+                console.log("Error updating time: ", error);
+              })
+              .then(() => {
+                updateWorkplaceTime(data.workplace, dataTimeDiff, type)
+                  .then(() => {
+                    console.log("Workplace time updating...");
+                  })
+                  .catch((error) => {
+                    console.log("Error updating time: ", error);
+                  });
+              });
           }
         );
       });
