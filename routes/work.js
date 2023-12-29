@@ -10,11 +10,15 @@ const {
   deleteWork,
 } = require("../controllers/work");
 
+const addTime = require("../middleware/addTime");
+const checkWork = require("../middleware/checkWork");
+const subtractTime = require("../middleware/subtractTime");
+
 router.get("/", getAllWorks);
 //router.get("/:IDdela", getWork);
 router.get("/:filter", getWorks);
-router.post("/", addWork);
+router.post("/", checkWork, addWork, addTime);
 router.put("/:IDdela", updateWork);
-router.delete("/:IDdela", deleteWork);
+router.delete("/:IDdela", subtractTime, deleteWork);
 
 module.exports = router;

@@ -99,8 +99,62 @@ const getWorks = async (req, res) => {
     res.status(400).json("Bad request");
   }
 };
+const addWork = async (req, res, next) => {
+  const data = {
+    worker: req.body.ime,
+    project: req.body.projekt,
+    workplace: req.body.stroj,
+    start_time: req.body.zacetni_cas,
+    end_time: req.body.koncni_cas,
+  };
+  console.log(data);
+  if (
+    data.worker &&
+    data.project &&
+    data.workplace &&
+    data.start_time &&
+    data.end_time
+  ) {
+    connectDB.getConnection((err, connection) => {
+      if (err) {
+        console.log("Cannot connect to database");
+        throw err;
+      }
+      console.log("Connection established");
+      connection.query(
+        "INSERT INTO delo (ime, projekt, stroj, zacetni_cas, koncni_cas) VALUES (?, ?, ?, ?, ?)",
+        [
+          data.worker,
+          data.project,
+          data.workplace,
+          data.start_time,
+          data.end_time,
+        ],
+        (err, result) => {
+          if (err) {
+            console.log("Server error");
+            res.status(500);
+            throw err;
+          }
+          res.status(201).json({ data });
 
-const addWork = async (req, res) => {
+          connection.release();
+          if (err) {
+            console.log("Can not release connection to database");
+            throw err;
+          }
+          console.log("Connection released.");
+
+          next();
+        }
+      );
+    });
+  } else {
+    res.status(400).json("Bad request");
+  }
+};
+/*
+const addWork = async (req, res, next) => {
   const data = {
     worker: req.body.ime,
     project: req.body.projekt,
@@ -154,6 +208,36 @@ const addWork = async (req, res) => {
                       throw err;
                     }
                     console.log("Connection released.");
+
+                    next();
+                    /*
+                    const dataTimeDiff =
+                      new Date(data.end_time) - new Date(data.start_time);
+
+                    const type = "add";
+
+                    updateProjectAndWorkplaceTime();
+
+                    async function updateProjectAndWorkplaceTime() {
+                      try {
+                        await updateProjectTime(
+                          data.project,
+                          dataTimeDiff,
+                          type
+                        );
+                        console.log("Project time updating...");
+
+                        await updateWorkplaceTime(
+                          data.workplace,
+                          dataTimeDiff,
+                          type
+                        );
+                        console.log("Workplace time updating...");
+                      } catch (error) {
+                        console.log("Error updating time: ", error);
+                      }
+                    }
+                   
 
                     const dataTimeDiff =
                       new Date(data.end_time) - new Date(data.start_time);
@@ -231,7 +315,7 @@ const addWork = async (req, res) => {
                           .catch((error) => {
                             console.log("Error updating time: ", error);
                           });
-                      });*/
+                      });
                   }
                 );
               });
@@ -254,7 +338,7 @@ const addWork = async (req, res) => {
     res.status(400).json("Bad request");
   }
 };
-
+*/
 const updateWork = async (req, res) => {
   const data = {
     worker: req.body.ime,
@@ -415,9 +499,47 @@ const deleteWork = async (req, res) => {
   const { IDdela: workID } = req.params;
 
   if (workID) {
-    const freeID = await checkWorkID(workID);
+    connectDB.getConnection((err, connection) => {
+      if (err) {
+        console.log("Cannot connect to database");
+        throw err;
+      }
+      console.log("Connection established");
+      connection.query(
+        "DELETE FROM delo WHERE IDdela = ?",
+        [workID],
+        (err, result) => {
+          if (err) {
+            console.log("Server error: ", err);
+            res.status(500);
+          }
+          console.log(result);
 
-    if (freeID !== 0) {
+          res.status(204).json({ result });
+
+          connection.release();
+          if (err) {
+            console.log("Can not release connection to database");
+            throw err;
+          }
+          console.log("Connection released.");
+        }
+      );
+    });
+  } else {
+    res.status(400).json("Bad request");
+  }
+};
+/*
+
+const deleteWork = async (req, res, next) => {
+  const { IDdela: workID } = req.params;
+
+  if (workID) {
+    const freeID = await checkWorkID(workID);
+    console.log(freeID);
+
+    if (freeID.length !== 0) {
       const data = {
         worker: freeID[0].ime,
         project: freeID[0].projekt,
@@ -451,10 +573,27 @@ const deleteWork = async (req, res) => {
             }
             console.log("Connection released.");
 
+            next();
+
+            /*
             const dataTimeDiff =
               new Date(data.end_time) - new Date(data.start_time);
 
             const type = "substract";
+
+            updateProjectAndWorkplaceTime();
+
+            async function updateProjectAndWorkplaceTime() {
+              try {
+                await updateProjectTime(data.project, dataTimeDiff, type);
+                console.log("Project time updating...");
+
+                await updateWorkplaceTime(data.workplace, dataTimeDiff, type);
+                console.log("Workplace time updating...");
+              } catch (error) {
+                console.log("Error updating time: ", error);
+              }
+              
 
             updateProjectTime(data.project, dataTimeDiff, type)
               .then(() => {
@@ -472,7 +611,7 @@ const deleteWork = async (req, res) => {
                     console.log("Error updating time: ", error);
                   });
               });
-          }
+            }
         );
       });
     } else {
@@ -482,6 +621,8 @@ const deleteWork = async (req, res) => {
     res.status(400).json("Bad request");
   }
 };
+*/
+
 module.exports = {
   getAllWorks,
   getWorks,
