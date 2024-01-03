@@ -10,7 +10,7 @@ async function checkName(name) {
       console.log("Connection established");
 
       connection.query(
-        "SELECT ime FROM delavec WHERE ime = ?",
+        "SELECT ime, email FROM delavec WHERE ime = ?",
         [name],
         (err, result) => {
           if (err) {
@@ -20,13 +20,7 @@ async function checkName(name) {
           connection.release();
           console.log("Connection released.");
 
-          if (result.length === 0) {
-            console.log("Name is free to use.");
-            resolve(true);
-          } else {
-            console.log("Name already exists!");
-            resolve(false);
-          }
+          resolve(result);
         }
       );
     });
@@ -53,13 +47,7 @@ async function checkEmail(email) {
           connection.release();
           console.log("Connection released.");
 
-          if (result.length === 0) {
-            console.log("Email is free to use.");
-            resolve(true);
-          } else {
-            console.log("Email already exists!");
-            resolve(false);
-          }
+          resolve(result);
         }
       );
     });

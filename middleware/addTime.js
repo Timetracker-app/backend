@@ -16,10 +16,12 @@ const addTime = async (req, res, next) => {
     const type = "add";
 
     await updateProjectTime(data.project, dataTimeDiff, type);
-    console.log("Project time updating...");
+    console.log("Project time adding...");
 
     await updateWorkplaceTime(data.workplace, dataTimeDiff, type);
-    console.log("Workplace time updating...");
+    console.log("Workplace time adding...");
+
+    next();
   } catch (error) {
     console.log("Error updating time: ", error);
   }

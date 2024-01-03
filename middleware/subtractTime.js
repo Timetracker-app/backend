@@ -27,10 +27,12 @@ const subtractTime = async (req, res, next) => {
         const type = "substract";
 
         await updateProjectTime(data.project, dataTimeDiff, type);
-        console.log("Project time updating...");
+        console.log("Project time subtracting...");
 
         await updateWorkplaceTime(data.workplace, dataTimeDiff, type);
-        console.log("Workplace time updating...");
+        console.log("Workplace time subtracting...");
+
+        next();
       } else {
         res.status(404).json("Work does not exist!");
       }

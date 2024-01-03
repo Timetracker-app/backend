@@ -11,17 +11,17 @@ const checkWork = async (req, res, next) => {
     end_time: req.body.koncni_cas,
   };
   if (
-    data.worker &&
-    data.project &&
-    data.workplace &&
-    data.start_time &&
-    data.end_time
+    typeof data.worker === "string" &&
+    typeof data.project === "string" &&
+    typeof data.workplace === "string" &&
+    typeof data.start_time === "string" &&
+    typeof data.end_time === "string"
   ) {
     const workerID = await checkName(data.worker);
     const workplaceCheck = await checkWorkplace(data.workplace);
     const projectCheck = await checkProject(data.project);
 
-    if (!workerID) {
+    if (workerID.length !== 0) {
       if (workplaceCheck.length !== 0) {
         if (projectCheck.length !== 0) {
           if (projectCheck[0].status === 1) {

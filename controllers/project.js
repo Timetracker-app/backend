@@ -54,7 +54,7 @@ const addProject = async (req, res) => {
               res.status(500);
               throw err;
             }
-            res.status(201).json({ data });
+            res.status(201).json("Project " + data.projectID + " added!");
 
             connection.release();
             if (err) {
@@ -79,7 +79,6 @@ const updateProject = async (req, res) => {
     time: req.body.cas,
   };
   const { projekt: projectID } = req.params;
-  console.log(projectID);
   if (
     projectID &&
     (data.status === 0 || data.status === 1) &&
@@ -102,7 +101,7 @@ const updateProject = async (req, res) => {
               res.status(500);
               throw err;
             }
-            res.status(204).json({ data });
+            res.status(204).json("Project " + projectID + " updated!");
 
             connection.release();
             if (err) {
@@ -143,7 +142,7 @@ const deleteProject = async (req, res) => {
             }
             console.log(result);
 
-            res.status(204).json({ result });
+            res.status(204).json("Project " + projectID + " deleted!");
 
             connection.release();
             if (err) {

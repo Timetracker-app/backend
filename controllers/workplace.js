@@ -54,7 +54,7 @@ const addWorkplace = async (req, res) => {
               res.status(500);
               throw err;
             }
-            res.status(201).json({ data });
+            res.status(201).json("Workplace " + data.workplaceID + " added!");
 
             connection.release();
             if (err) {
@@ -81,7 +81,7 @@ const updateWorkplace = async (req, res) => {
   const { stroj: workplaceID } = req.params;
   console.log(workplaceID, data);
   if (
-    workplaceID !== "" &&
+    workplaceID &&
     (data.status === 0 || data.status === 1) &&
     data.time !== ""
   ) {
@@ -102,7 +102,7 @@ const updateWorkplace = async (req, res) => {
               res.status(500);
               throw err;
             }
-            res.status(204).json({ data });
+            res.status(204).json("Workplace " + workplaceID + " updated!");
 
             connection.release();
             if (err) {
@@ -143,7 +143,7 @@ const deleteWorkplace = async (req, res) => {
             }
             console.log(result);
 
-            res.status(204).json({ result });
+            res.status(204).json("Workplace " + workplaceID + " deleted!");
 
             connection.release();
             if (err) {

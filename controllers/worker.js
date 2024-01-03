@@ -80,8 +80,8 @@ const addWorker = async (req, res) => {
   if (data.name && data.lastname && data.email && data.password) {
     const freeName = await checkName(data.name);
     const freeEmail = await checkEmail(data.email);
-    if (freeName) {
-      if (freeEmail) {
+    if (freeName.length === 0) {
+      if (freeEmail.length === 0) {
         const salt = await bcrypt.genSalt(10);
         const hashedPass = await bcrypt.hash(data.password, salt);
 
@@ -127,7 +127,7 @@ const deleteWorker = async (req, res) => {
 
   if (name) {
     const freeName = await checkName(name);
-    if (!freeName) {
+    if (freeName.length !== 0) {
       connectDB.getConnection((err, connection) => {
         if (err) {
           console.log("Cannot connect to database");
@@ -144,7 +144,7 @@ const deleteWorker = async (req, res) => {
             }
             console.log(result);
 
-            res.status(204).json("Worker deleted!");
+            res.status(204).json("Worker " + name + " deleted!");
 
             connection.release();
             if (err) {
@@ -170,13 +170,17 @@ const updateWorker = async (req, res) => {
     password: req.body.geslo,
   };
   const { ime: name } = req.params;
-  console.log(name);
+
   if (name && data.lastname && data.email && data.password) {
     const freeName = await checkName(name);
     const freeEmail = await checkEmail(data.email);
 
-    if (!freeName) {
-      if (freeEmail) {
+    if (freeName.length !== 0) {
+      if (
+        freeEmail.length === 0 ||
+        freeEmail[0].email !== data.email ||
+        freeName[0].email === data.email
+      ) {
         const salt = await bcrypt.genSalt(10);
         const hashedPass = await bcrypt.hash(data.password, salt);
 
@@ -195,7 +199,7 @@ const updateWorker = async (req, res) => {
                 res.status(500);
                 throw err;
               }
-              res.status(204).json({ data });
+              res.status(204).json("Worker " + name + " updated!");
 
               connection.release();
               if (err) {
