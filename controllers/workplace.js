@@ -2,6 +2,9 @@ const connectDB = require("../db/connection").pool;
 
 const checkWorkplace = require("./checker").checkWorkplace;
 
+const prepareResponse = require("./tools").prepareResponse;
+const generateURL = require("./tools").generateURL;
+
 const getAllWorkplaces = async (req, res) => {
   connectDB.getConnection((err, connection) => {
     if (err) {
@@ -54,6 +57,8 @@ const addWorkplace = async (req, res) => {
               res.status(500);
               throw err;
             }
+            //const response = generateURL(data.workplaceID);
+            //res.status(201).json(response);
             res.status(201).json("Workplace " + data.workplaceID + " added!");
 
             connection.release();
@@ -66,7 +71,8 @@ const addWorkplace = async (req, res) => {
         );
       });
     } else {
-      res.status(409).json("Workplace ID already exists!");
+      const errorMsg = prepareResponse("Workplace ID already exists!", 104);
+      res.status(409).json({ errorMsg });
     }
   } else {
     res.status(400).json("Bad request");
@@ -114,7 +120,8 @@ const updateWorkplace = async (req, res) => {
         );
       });
     } else {
-      res.status(404).json("Workplace does not exist!");
+      const errorMsg = prepareResponse("Workplace does not exist!", 105);
+      res.status(404).json({ errorMsg });
     }
   } else {
     res.status(400).json("Bad request");
@@ -155,7 +162,8 @@ const deleteWorkplace = async (req, res) => {
         );
       });
     } else {
-      res.status(404).json("Workplace does not exist!");
+      const errorMsg = prepareResponse("Workplace does not exist!", 105);
+      res.status(404).json({ errorMsg });
     }
   } else {
     res.status(400).json("Bad request");

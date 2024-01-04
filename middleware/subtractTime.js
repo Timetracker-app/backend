@@ -1,4 +1,5 @@
 const checkWorkID = require("../controllers/checker").checkWorkID;
+const prepareResponse = require("../controllers/tools").prepareResponse;
 
 const updateProjectTime =
   require("../controllers/timeHandler").updateProjectTime;
@@ -11,7 +12,6 @@ const subtractTime = async (req, res, next) => {
 
     if (workID) {
       const freeID = await checkWorkID(workID);
-      console.log(freeID);
 
       if (freeID.length !== 0) {
         const data = {
@@ -34,7 +34,8 @@ const subtractTime = async (req, res, next) => {
 
         next();
       } else {
-        res.status(404).json("Work does not exist!");
+        const errorMsg = prepareResponse("Work does not exist!", 110);
+        res.status(404).json({ errorMsg });
       }
     } else {
       res.status(400).json("Bad request");

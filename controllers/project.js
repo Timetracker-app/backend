@@ -2,6 +2,9 @@ const connectDB = require("../db/connection").pool;
 
 const checkProject = require("./checker").checkProject;
 
+const prepareResponse = require("./tools").prepareResponse;
+const generateURL = require("./tools").generateURL;
+
 const getAllProjects = async (req, res) => {
   connectDB.getConnection((err, connection) => {
     if (err) {
@@ -54,6 +57,8 @@ const addProject = async (req, res) => {
               res.status(500);
               throw err;
             }
+            //const response = generateURL(data.projectID);
+            //res.status(201).json(response);
             res.status(201).json("Project " + data.projectID + " added!");
 
             connection.release();
@@ -66,7 +71,8 @@ const addProject = async (req, res) => {
         );
       });
     } else {
-      res.status(409).json("Project ID already exists!");
+      const errorMsg = prepareResponse("Project ID already exists!", 106);
+      res.status(409).json({ errorMsg });
     }
   } else {
     res.status(400).json("Bad request");
@@ -113,7 +119,8 @@ const updateProject = async (req, res) => {
         );
       });
     } else {
-      res.status(404).json("Project does not exist!");
+      const errorMsg = prepareResponse("Project does not exist!", 107);
+      res.status(404).json({ errorMsg });
     }
   } else {
     res.status(400).json("Bad request");
@@ -154,7 +161,8 @@ const deleteProject = async (req, res) => {
         );
       });
     } else {
-      res.status(404).json("Project does not exist!");
+      const errorMsg = prepareResponse("Project does not exist!", 107);
+      res.status(404).json({ errorMsg });
     }
   } else {
     res.status(400).json("Bad request");

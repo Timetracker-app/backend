@@ -3,6 +3,8 @@ const bcrypt = require("bcryptjs");
 
 const checkName = require("./checker").checkName;
 const checkEmail = require("./checker").checkEmail;
+const prepareResponse = require("./tools").prepareResponse;
+const generateURL = require("./tools").generateURL;
 
 const getAllWorkers = async (req, res) => {
   connectDB.getConnection((err, connection) => {
@@ -100,7 +102,9 @@ const addWorker = async (req, res) => {
                 res.status(500);
                 throw err;
               }
-              res.status(201).json("User " + data.name + " added");
+              //const response = generateURL(data.name);
+              //res.status(201).json(response);
+              res.status(201).json("Worker " + data.name + " added!");
 
               connection.release();
               if (err) {
@@ -112,10 +116,12 @@ const addWorker = async (req, res) => {
           );
         });
       } else {
-        res.status(409).json("Email already exists!");
+        const errorMsg = prepareResponse("Email already exists!", 102);
+        res.status(409).json({ errorMsg });
       }
     } else {
-      res.status(409).json("Worker already exists!");
+      const errorMsg = prepareResponse("Worker already exists!", 101);
+      res.status(409).json({ errorMsg });
     }
   } else {
     res.status(400).json("Bad request");
@@ -156,7 +162,8 @@ const deleteWorker = async (req, res) => {
         );
       });
     } else {
-      res.status(404).json("Worker does not exist!");
+      const errorMsg = prepareResponse("Worker does not exist!", 103);
+      res.status(404).json({ errorMsg });
     }
   } else {
     res.status(400).json("Bad request");
@@ -211,10 +218,12 @@ const updateWorker = async (req, res) => {
           );
         });
       } else {
-        res.status(409).json("Email already exists!");
+        const errorMsg = prepareResponse("Email already exists!", 102);
+        res.status(409).json({ errorMsg });
       }
     } else {
-      res.status(404).json("Worker does not exist!");
+      const errorMsg = prepareResponse("Worker does not exist!", 103);
+      res.status(404).json({ errorMsg });
     }
   } else {
     res.status(400).json("Bad request");

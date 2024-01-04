@@ -140,7 +140,11 @@ function formatTime(currentTime, newTime, type) {
   if (type === "add") {
     var updatedTime_ms = currentTime + newTime;
   } else if (type === "substract") {
-    var updatedTime_ms = currentTime - newTime;
+    if (newTime < currentTime) {
+      var updatedTime_ms = currentTime - newTime;
+    } else {
+      var updatedTime_ms = 0;
+    }
   }
 
   const hours = Math.floor(updatedTime_ms / (1000 * 60 * 60));

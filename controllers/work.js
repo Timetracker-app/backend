@@ -1,5 +1,7 @@
 const connectDB = require("../db/connection").pool;
 
+const generateURL = require("./tools").generateURL;
+
 const getAllWorks = async (req, res) => {
   connectDB.getConnection((err, connection) => {
     if (err) {
@@ -128,6 +130,8 @@ const addWork = async (req, res) => {
             res.status(500);
             throw err;
           }
+          //const response = generateURL(?); Ne vemo IDja?
+          //res.status(201).json(response);
           res.status(201).json({ data });
 
           connection.release();

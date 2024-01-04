@@ -1,6 +1,7 @@
 const checkName = require("../controllers/checker").checkName;
 const checkWorkplace = require("../controllers/checker").checkWorkplace;
 const checkProject = require("../controllers/checker").checkProject;
+const prepareResponse = require("../controllers/tools").prepareResponse;
 
 const checkWork = async (req, res, next) => {
   const data = {
@@ -29,19 +30,24 @@ const checkWork = async (req, res, next) => {
               console.log("Data is good!");
               next();
             } else {
-              res.status(409).json("Workplace is inactive!");
+              const errorMsg = prepareResponse("Workplace is inactive!", 108);
+              res.status(409).json({ errorMsg });
             }
           } else {
-            res.status(409).json("Project is inactive!");
+            const errorMsg = prepareResponse("Project is inactive!", 109);
+            res.status(409).json({ errorMsg });
           }
         } else {
-          res.status(404).json("Project does not exist!");
+          const errorMsg = prepareResponse("Project does not exist!", 107);
+          res.status(404).json({ errorMsg });
         }
       } else {
-        res.status(404).json("Workplace does not exist!");
+        const errorMsg = prepareResponse("Workplace does not exist!", 105);
+        res.status(404).json({ errorMsg });
       }
     } else {
-      res.status(404).json("Worker does not exist!");
+      const errorMsg = prepareResponse("Worker does not exist!", 103);
+      res.status(404).json({ errorMsg });
     }
   } else {
     res.status(400).json("Bad request");
