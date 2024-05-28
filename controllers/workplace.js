@@ -34,6 +34,45 @@ const getAllWorkplaces = async (req, res) => {
   });
 };
 
+const getWorkplace = async (req, res) => {
+  const { stroj: workplaceID } = req.params;
+
+  if (workplaceID) {
+    connectDB.getConnection((err, connection) => {
+      if (err) {
+        console.log("Can not connect to database");
+        throw err;
+      }
+      console.log("Connection established");
+      connection.query(
+        "SELECT * FROM delovno_mesto WHERE stroj = ?",
+        [workplaceID],
+        (err, result) => {
+          if (err) {
+            console.log("Server error");
+            res.status(500);
+            throw err;
+          }
+          if (result.length === 0) {
+            res.status(404).json("Not found");
+          } else {
+            console.log("Connection established");
+            console.log(result);
+            res.status(200).json({ result });
+
+            connection.release();
+            if (err) {
+              console.log("Cannot release connection to database");
+              throw err;
+            }
+            console.log("Connection released.");
+          }
+        }
+      );
+    });
+  }
+};
+
 const addWorkplace = async (req, res) => {
   const data = {
     workplaceID: req.body.stroj,
@@ -172,6 +211,7 @@ const deleteWorkplace = async (req, res) => {
 
 module.exports = {
   getAllWorkplaces,
+  getWorkplace,
   addWorkplace,
   updateWorkplace,
   deleteWorkplace,

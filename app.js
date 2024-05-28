@@ -1,4 +1,6 @@
 const express = require("express");
+const cors = require("cors");
+
 const app = express();
 
 const notFound = (req, res) => res.status(404).send("Route does not exist");
@@ -13,11 +15,18 @@ const work = require("./routes/work");
 
 app.use(express.json());
 
+const corsOptions = {
+  origin: "http://localhost:5173", // frontend
+  optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+};
+
+app.use(cors(corsOptions));
+
 app.use("/login", login);
-app.use("/worker", authenticateUser, worker);
-app.use("/project", authenticateUser, project);
-app.use("/workplace", authenticateUser, workplace);
-app.use("/work", authenticateUser, work);
+app.use("/worker", worker); // DAJ NAZAJ authenticateUser
+app.use("/project", project); // DAJ NAZAJ authenticateUser
+app.use("/workplace", workplace); // DAJ NAZAJ authenticateUser
+app.use("/work", work); // DAJ NAZAJ authenticateUser
 
 app.use(notFound);
 
