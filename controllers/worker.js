@@ -174,11 +174,12 @@ const updateWorker = async (req, res) => {
   const data = {
     lastname: req.body.priimek,
     email: req.body.email,
-    password: req.body.geslo,
+    //password: req.body.geslo,
+    //newPassword: req.body.novoGeslo,
   };
   const { ime: name } = req.params;
 
-  if (name && data.lastname && data.email && data.password) {
+  if (name && data.lastname && data.email) {
     const freeName = await checkName(name);
     const freeEmail = await checkEmail(data.email);
 
@@ -188,8 +189,8 @@ const updateWorker = async (req, res) => {
         freeEmail[0].email !== data.email ||
         freeName[0].email === data.email
       ) {
-        const salt = await bcrypt.genSalt(10);
-        const hashedPass = await bcrypt.hash(data.password, salt);
+        //const salt = await bcrypt.genSalt(10);
+        //const hashedPass = await bcrypt.hash(data.password, salt);
 
         connectDB.getConnection((err, connection) => {
           if (err) {
@@ -198,8 +199,8 @@ const updateWorker = async (req, res) => {
           }
           console.log("Connection established");
           connection.query(
-            "UPDATE delavec SET priimek = ?, email = ?, geslo= ? WHERE ime = ?",
-            [data.lastname, data.email, hashedPass, name],
+            "UPDATE delavec SET priimek = ?, email = ? WHERE ime = ?",
+            [data.lastname, data.email, name],
             (err, result) => {
               if (err) {
                 console.log("Server error");

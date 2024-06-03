@@ -74,11 +74,14 @@ const getWorkplace = async (req, res) => {
 };
 
 const addWorkplace = async (req, res) => {
+  console.log(req.headers);
+  console.log(req.body);
   const data = {
     workplaceID: req.body.stroj,
+    status: req.body.status,
   };
   console.log(data);
-  if (data.workplaceID) {
+  if (data.workplaceID && (data.status === "0" || data.status === "1")) {
     const freeID = await checkWorkplace(data.workplaceID);
     if (freeID.length === 0) {
       connectDB.getConnection((err, connection) => {
@@ -88,8 +91,8 @@ const addWorkplace = async (req, res) => {
         }
         console.log("Connection established");
         connection.query(
-          "INSERT INTO delovno_mesto (stroj) VALUES (?)",
-          [data.workplaceID],
+          "INSERT INTO delovno_mesto (stroj, status) VALUES (?,?)",
+          [data.workplaceID, data.status],
           (err, result) => {
             if (err) {
               console.log("Server error");

@@ -1,9 +1,8 @@
 require("dotenv").config();
 const connectDB = require("../db/connection").pool;
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
 
-const login = async (req, res) => {
+const checkPassword = async (req, res) => {
   const data = {
     email: req.body.email,
     password: req.body.geslo,
@@ -47,13 +46,7 @@ const login = async (req, res) => {
       }
       console.log("Passwords match!");
 
-      const token = jwt.sign(
-        { userName: output[0].ime, userLastname: output[0].priimek },
-        process.env.JWT_SECRET,
-        { expiresIn: process.env.JWT_LIFETIME }
-      );
-
-      res.status(200).json({ user: output[0].ime, token });
+      next();
     } catch (error) {
       console.log("Error login");
     }
@@ -61,4 +54,4 @@ const login = async (req, res) => {
     res.status(400).json("Bad request");
   }
 };
-module.exports = login;
+module.exports = checkPassword;

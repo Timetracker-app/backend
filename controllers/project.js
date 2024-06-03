@@ -76,9 +76,10 @@ const getProject = async (req, res) => {
 const addProject = async (req, res) => {
   const data = {
     projectID: req.body.projekt,
+    status: req.body.status,
   };
   console.log(data);
-  if (data.projectID) {
+  if (data.projectID && (data.status === "0" || data.status === "1")) {
     const freeID = await checkProject(data.projectID);
     if (freeID.length === 0) {
       connectDB.getConnection((err, connection) => {
@@ -88,8 +89,8 @@ const addProject = async (req, res) => {
         }
         console.log("Connection established");
         connection.query(
-          "INSERT INTO narocilo (projekt) VALUES (?)",
-          [data.projectID],
+          "INSERT INTO narocilo (projekt, status) VALUES (?, ?)",
+          [data.projectID, data.status],
           (err, result) => {
             if (err) {
               console.log("Server error");

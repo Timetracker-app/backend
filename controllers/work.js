@@ -66,7 +66,7 @@ const getWorks = async (req, res) => {
         throw err;
       }
       connection.query(
-        "SELECT * FROM delo WHERE (ime = ? OR ? = '') AND (projekt = ? OR ? = '') AND (stroj = ? OR ? = '') AND (zacetni_cas >= STR_TO_DATE(?, '%Y-%m-%d %H:%i:%s') OR ? = '') AND (koncni_cas <= STR_TO_DATE(?, '%Y-%m-%d %H:%i:%s') OR ? = '');",
+        "SELECT * FROM delo WHERE (ime = ? OR ? = '') AND (projekt = ? OR ? = '') AND (stroj = ? OR ? = '') AND (zacetni_cas >= STR_TO_DATE(?, '%Y-%m-%d %H:%i:%s') OR ? = '') AND (zacetni_cas <= STR_TO_DATE(?, '%Y-%m-%d %H:%i:%s') OR ? = '');",
         /*[
           data.worker,
           data.worker,
@@ -254,7 +254,7 @@ const updateWork = async (req, res) => {
             res.status(500);
             throw err;
           }
-          res.status(204).json({ data });
+          res.status(204).json("Work " + workID + " updated!");
 
           connection.release();
           if (err) {
@@ -272,7 +272,7 @@ const updateWork = async (req, res) => {
 
 const deleteWork = async (req, res) => {
   //const { IDdela: workID } = req.query;
-  const workID = req.query.IDdela;
+  const workID = req.params.IDdela;
 
   if (workID) {
     connectDB.getConnection((err, connection) => {
@@ -291,7 +291,7 @@ const deleteWork = async (req, res) => {
           }
           console.log(result);
 
-          res.status(204).json({ result });
+          res.status(204).json("Work " + workID + " deleted!");
 
           connection.release();
           if (err) {
