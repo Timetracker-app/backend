@@ -2,12 +2,16 @@ require("dotenv").config();
 const connectDB = require("../db/connection").pool;
 const bcrypt = require("bcryptjs");
 
-const checkPassword = async (req, res) => {
+const checkPassword = async (req, res, next) => {
   const data = {
-    email: req.body.email,
     password: req.body.geslo,
   };
-  if (data.email && data.password) {
+  const { ime: name } = req.params;
+
+  console.log(data.password);
+  console.log(name);
+
+  if (name && data.password) {
     try {
       const output = await new Promise((resolve, reject) => {
         connectDB.getConnection((err, connection) => {
@@ -17,8 +21,8 @@ const checkPassword = async (req, res) => {
           }
           console.log("Connection established");
           connection.query(
-            "SELECT ime, priimek, email, geslo FROM delavec WHERE email = ?",
-            [data.email],
+            "SELECT geslo FROM delavec WHERE ime = ?",
+            [name],
             (err, result) => {
               if (err) {
                 console.log("Server error");
@@ -37,18 +41,20 @@ const checkPassword = async (req, res) => {
         });
       });
 
-      if (output.length === 0) {
-        res.status(401).json("Invalid Credentials");
+      if (output.length !== 0) {
+        const isMatch = await bcrypt.compare(data.password, output[0].geslo);
+        console.log(isMatch);
+        if (isMatch) {
+          console.log("Passwords match!");
+          next();
+        } else {
+          console.log("Invalid Credentials");
+          res.status(401).json("Invalid Credentials");
+        }
       }
-      const isMatch = await bcrypt.compare(data.password, output[0].geslo);
-      if (!isMatch) {
-        res.status(401).json("Invalid Credentials");
-      }
-      console.log("Passwords match!");
-
-      next();
     } catch (error) {
-      console.log("Error login");
+      console.log("Error password checker");
+      console.log(error);
     }
   } else {
     res.status(400).json("Bad request");

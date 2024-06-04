@@ -3,8 +3,8 @@ const bcrypt = require("bcryptjs");
 
 const checkName = require("./checker").checkName;
 const checkEmail = require("./checker").checkEmail;
+const checkPassword = require("./checker");
 const prepareResponse = require("./tools").prepareResponse;
-const generateURL = require("./tools").generateURL;
 
 const getAllWorkers = async (req, res) => {
   connectDB.getConnection((err, connection) => {
@@ -231,10 +231,53 @@ const updateWorker = async (req, res) => {
   }
 };
 
+const changePassword = async (req, res) => {
+  const data = {
+    password: req.body.geslo,
+    newPassword: req.body.novoGeslo,
+  };
+  const { ime: name } = req.params;
+
+  if (name && data.password && data.newPassword) {
+    const salt = await bcrypt.genSalt(10);
+    const hashedPass = await bcrypt.hash(data.newPassword, salt);
+
+    connectDB.getConnection((err, connection) => {
+      if (err) {
+        console.log("Cannot connect to database");
+        throw err;
+      }
+      console.log("Connection established");
+      connection.query(
+        "UPDATE delavec SET geslo = ? WHERE ime = ?",
+        [hashedPass, name],
+        (err, result) => {
+          if (err) {
+            console.log("Server error");
+            res.status(500);
+            throw err;
+          }
+          res.status(204).json("Password updated!");
+
+          connection.release();
+          if (err) {
+            console.log("Can not release connection to database");
+            throw err;
+          }
+          console.log("Connection released.");
+        }
+      );
+    });
+  } else {
+    res.status(400).json("Bad request");
+  }
+};
+
 module.exports = {
   getAllWorkers,
   getWorker,
   addWorker,
   deleteWorker,
   updateWorker,
+  changePassword,
 };
