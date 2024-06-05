@@ -81,7 +81,7 @@ const addWorkplace = async (req, res) => {
     status: req.body.status,
   };
   console.log(data);
-  if (data.workplaceID && (data.status === "0" || data.status === "1")) {
+  if (data.workplaceID && (data.status === 0 || data.status === 1)) {
     const freeID = await checkWorkplace(data.workplaceID);
     if (freeID.length === 0) {
       connectDB.getConnection((err, connection) => {

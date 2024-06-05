@@ -79,7 +79,7 @@ const addProject = async (req, res) => {
     status: req.body.status,
   };
   console.log(data);
-  if (data.projectID && (data.status === "0" || data.status === "1")) {
+  if (data.projectID && (data.status === 0 || data.status === 1)) {
     const freeID = await checkProject(data.projectID);
     if (freeID.length === 0) {
       connectDB.getConnection((err, connection) => {

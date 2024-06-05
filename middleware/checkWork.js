@@ -11,6 +11,7 @@ const checkAddWork = async (req, res, next) => {
     start_time: req.body.zacetni_cas,
     end_time: req.body.koncni_cas,
   };
+  console.log(data);
   if (
     typeof data.worker === "string" &&
     typeof data.project === "string" &&
@@ -19,6 +20,7 @@ const checkAddWork = async (req, res, next) => {
     typeof data.end_time === "string"
   ) {
     const workerID = await checkName(data.worker);
+    console.log(workerID);
     const workplaceCheck = await checkWorkplace(data.workplace);
     const projectCheck = await checkProject(data.project);
 

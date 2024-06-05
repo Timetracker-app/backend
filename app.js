@@ -24,10 +24,10 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 app.use("/login", login);
-app.use("/worker", worker); // DAJ NAZAJ authenticateUser
-app.use("/project", project); // DAJ NAZAJ authenticateUser
-app.use("/workplace", workplace); // DAJ NAZAJ authenticateUser
-app.use("/work", work); // DAJ NAZAJ authenticateUser
+app.use("/worker", authenticateUser, worker); // DAJ NAZAJ authenticateUser
+app.use("/project", authenticateUser, project); // DAJ NAZAJ authenticateUser
+app.use("/workplace", authenticateUser, workplace); // DAJ NAZAJ authenticateUser
+app.use("/work", authenticateUser, work); // DAJ NAZAJ authenticateUser
 
 app.use(notFound);
 

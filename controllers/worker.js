@@ -3,7 +3,6 @@ const bcrypt = require("bcryptjs");
 
 const checkName = require("./checker").checkName;
 const checkEmail = require("./checker").checkEmail;
-const checkPassword = require("./checker");
 const prepareResponse = require("./tools").prepareResponse;
 
 const getAllWorkers = async (req, res) => {
@@ -14,7 +13,7 @@ const getAllWorkers = async (req, res) => {
     }
     console.log("Connection established");
     connection.query(
-      "SELECT ime, priimek, email FROM delavec",
+      "SELECT ime, priimek, email, role FROM delavec",
       (err, result) => {
         if (err) {
           console.log("Server error");
@@ -45,7 +44,7 @@ const getWorker = async (req, res) => {
     }
     console.log("Connection established");
     connection.query(
-      "SELECT ime, priimek, email FROM delavec WHERE ime = ?",
+      "SELECT ime, priimek, email, role FROM delavec WHERE ime = ?",
       [name],
       (err, result) => {
         if (err) {
