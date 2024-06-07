@@ -1,58 +1,15 @@
 const connectDB = require("../db/connection").pool;
 
-const generateURL = require("./tools").generateURL;
-
-/*
-const getAllWorks = async (req, res) => {
-  connectDB.getConnection((err, connection) => {
-    if (err) {
-      console.log("Can not connect to database");
-      throw err;
-    }
-    connection.query("SELECT * FROM delo", (err, result) => {
-      if (err) {
-        console.log("Server error");
-        res.status(500);
-        throw err;
-      }
-
-      console.log("Connection established");
-      console.log(result);
-      res.status(200).json({ result });
-
-      connection.release();
-      if (err) {
-        console.log("Can not release connection to database");
-        throw err;
-      }
-      console.log("Connection released.");
-    });
-  });
-};
-*/
 const getWorks = async (req, res) => {
-  /*
-  const data = {
-    worker: req.query.ime,
-    project: req.query.projekt,
-    workplace: req.query.stroj,
-    start_time: req.query.zacetnicas,
-    end_time: req.query.koncnicas,
-  };
-  */
   const worker = req.query.worker;
   const project = req.query.project;
   const workplace = req.query.workplace;
   const starttime = req.query.starttime;
   const endtime = req.query.endtime;
-  /*
-  if (
-    typeof data.worker === "string" &&
-    typeof data.project === "string" &&
-    typeof data.workplace === "string" &&
-    typeof data.start_time === "string" &&
-    typeof data.end_time === "string"
-  ) {*/
+
+  const userRole = req.user.role;
+  const userName = req.user.userName;
+
   if (
     typeof worker === "string" &&
     typeof project === "string" &&
@@ -60,61 +17,54 @@ const getWorks = async (req, res) => {
     typeof starttime === "string" &&
     typeof endtime === "string"
   ) {
-    connectDB.getConnection((err, connection) => {
-      if (err) {
-        console.log("Cannot connect to database");
-        throw err;
-      }
-      connection.query(
-        "SELECT * FROM delo WHERE (ime = ? OR ? = '') AND (projekt = ? OR ? = '') AND (stroj = ? OR ? = '') AND (zacetni_cas >= STR_TO_DATE(?, '%Y-%m-%d %H:%i:%s') OR ? = '') AND (zacetni_cas <= STR_TO_DATE(?, '%Y-%m-%d %H:%i:%s') OR ? = '');",
-        /*[
-          data.worker,
-          data.worker,
-          data.project,
-          data.project,
-          data.workplace,
-          data.workplace,
-          data.start_time,
-          data.start_time,
-          data.end_time,
-          data.end_time,
-        ],*/
-        [
-          worker,
-          worker,
-          project,
-          project,
-          workplace,
-          workplace,
-          starttime,
-          starttime,
-          endtime,
-          endtime,
-        ],
-        (err, result) => {
-          if (err) {
-            console.log("Server error");
-            res.status(500);
-            throw err;
-          }
-
-          if (result.length === 0) {
-            res.status(404).json("Not found");
-          } else {
-            console.log("Connection established");
-            console.log(result);
-            res.status(200).json({ result });
-
-            connection.release();
+    if (userRole === "admin" || userName === worker) {
+      connectDB.getConnection((err, connection) => {
+        if (err) {
+          console.log("Cannot connect to database");
+          throw err;
+        }
+        connection.query(
+          "SELECT * FROM delo WHERE (ime = ? OR ? = '') AND (projekt = ? OR ? = '') AND (stroj = ? OR ? = '') AND (zacetni_cas >= STR_TO_DATE(?, '%Y-%m-%d %H:%i:%s') OR ? = '') AND (zacetni_cas <= STR_TO_DATE(?, '%Y-%m-%d %H:%i:%s') OR ? = '');",
+          [
+            worker,
+            worker,
+            project,
+            project,
+            workplace,
+            workplace,
+            starttime,
+            starttime,
+            endtime,
+            endtime,
+          ],
+          (err, result) => {
             if (err) {
-              console.log("Cannot release connection to database");
+              console.log("Server error");
+              res.status(500);
               throw err;
             }
-            console.log("Connection released.");
+
+            if (result.length === 0) {
+              res.status(404).json("Not found");
+            } else {
+              console.log("Connection established");
+              console.log(result);
+              res.status(200).json({ result });
+
+              connection.release();
+              if (err) {
+                console.log("Cannot release connection to database");
+                throw err;
+              }
+              console.log("Connection released.");
+            }
           }
-        }
-      );
-    });
+        );
+      });
+    } else {
+      console.log("Forbidden");
+      res.status(403).json("Forbidden");
+    }
   } else {
     res.status(400).json("Bad request");
   }
@@ -122,39 +72,83 @@ const getWorks = async (req, res) => {
 
 const getWork = async (req, res) => {
   const { IDdela: workID } = req.params;
+
+  const userRole = req.user.role;
+  const userName = req.user.userName;
+
+  console.log(req.params);
+
   if (workID) {
-    connectDB.getConnection((err, connection) => {
-      if (err) {
-        console.log("Cannot connect to database");
-        throw err;
-      }
-      connection.query(
-        "SELECT * FROM delo WHERE IDdela = ?",
-        [workID],
-        (err, result) => {
-          if (err) {
-            console.log("Server error");
-            res.status(500);
-            throw err;
-          }
-
-          if (result.length === 0) {
-            res.status(404).json("Not found");
-          } else {
-            console.log("Connection established");
-            console.log(result);
-            res.status(200).json({ result });
-
-            connection.release();
+    if (userRole === "admin") {
+      connectDB.getConnection((err, connection) => {
+        if (err) {
+          console.log("Cannot connect to database");
+          throw err;
+        }
+        connection.query(
+          "SELECT * FROM delo WHERE IDdela = ?",
+          [workID],
+          (err, result) => {
             if (err) {
-              console.log("Cannot release connection to database");
+              console.log("Server error");
+              res.status(500);
               throw err;
             }
-            console.log("Connection released.");
+
+            if (result.length === 0) {
+              res.status(404).json("Not found");
+            } else {
+              console.log("Connection established");
+              console.log(result);
+              res.status(200).json({ result });
+
+              connection.release();
+              if (err) {
+                console.log("Cannot release connection to database");
+                throw err;
+              }
+              console.log("Connection released.");
+            }
           }
+        );
+      });
+    } else if (userRole === "user") {
+      connectDB.getConnection((err, connection) => {
+        if (err) {
+          console.log("Cannot connect to database");
+          throw err;
         }
-      );
-    });
+        connection.query(
+          "SELECT * FROM delo WHERE IDdela = ? AND ime = ?",
+          [workID, userName],
+          (err, result) => {
+            if (err) {
+              console.log("Server error");
+              res.status(500);
+              throw err;
+            }
+
+            if (result.length === 0) {
+              res.status(401).json("Unauthorized");
+            } else {
+              console.log("Connection established");
+              console.log(result);
+              res.status(200).json({ result });
+
+              connection.release();
+              if (err) {
+                console.log("Cannot release connection to database");
+                throw err;
+              }
+              console.log("Connection released.");
+            }
+          }
+        );
+      });
+    } else {
+      console.log("Forbidden");
+      res.status(403).json("Forbidden");
+    }
   } else {
     res.status(400).json("Bad request");
   }
@@ -169,6 +163,7 @@ const addWork = async (req, res) => {
     end_time: req.body.koncni_cas,
   };
   console.log(data);
+
   if (
     data.worker &&
     data.project &&
@@ -197,8 +192,6 @@ const addWork = async (req, res) => {
             res.status(500);
             throw err;
           }
-          //const response = generateURL(?); Ne vemo IDja?
-          //res.status(201).json(response);
           res.status(201).json({ data });
 
           connection.release();
@@ -224,6 +217,7 @@ const updateWork = async (req, res) => {
     end_time: req.body.koncni_cas,
   };
   const { IDdela: workID } = req.params;
+
   if (
     workID &&
     data.worker &&
@@ -271,7 +265,6 @@ const updateWork = async (req, res) => {
 };
 
 const deleteWork = async (req, res) => {
-  //const { IDdela: workID } = req.query;
   const workID = req.params.IDdela;
 
   if (workID) {
@@ -308,7 +301,6 @@ const deleteWork = async (req, res) => {
 };
 
 module.exports = {
-  //getAllWorks,
   getWorks,
   getWork,
   addWork,

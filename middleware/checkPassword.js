@@ -8,9 +8,6 @@ const checkPassword = async (req, res, next) => {
   };
   const { ime: name } = req.params;
 
-  console.log(data.password);
-  console.log(name);
-
   if (name && data.password) {
     try {
       const output = await new Promise((resolve, reject) => {
@@ -43,7 +40,6 @@ const checkPassword = async (req, res, next) => {
 
       if (output.length !== 0) {
         const isMatch = await bcrypt.compare(data.password, output[0].geslo);
-        console.log(isMatch);
         if (isMatch) {
           console.log("Passwords match!");
           next();

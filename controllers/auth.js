@@ -18,7 +18,7 @@ const login = async (req, res) => {
           }
           console.log("Connection established");
           connection.query(
-            "SELECT ime, priimek, email, geslo FROM delavec WHERE email = ?",
+            "SELECT ime, priimek, email, geslo, role FROM delavec WHERE email = ?",
             [data.email],
             (err, result) => {
               if (err) {
@@ -48,7 +48,7 @@ const login = async (req, res) => {
       console.log("Passwords match!");
 
       const token = jwt.sign(
-        { userName: output[0].ime, userLastname: output[0].priimek },
+        { userName: output[0].ime, role: output[0].role },
         process.env.JWT_SECRET,
         { expiresIn: process.env.JWT_LIFETIME }
       );

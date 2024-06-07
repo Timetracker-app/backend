@@ -8,7 +8,7 @@ const auth = async (req, res, next) => {
       const payload = jwt.verify(token, process.env.JWT_SECRET);
       req.user = {
         userName: payload.userName,
-        userLastname: payload.userLastname,
+        role: payload.role,
       };
       next();
     } else {

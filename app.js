@@ -18,16 +18,16 @@ app.use(express.json());
 const corsOptions = {
   origin: "http://localhost:5173", // frontend
   methods: ["GET", "POST", "PUT", "DELETE"],
-  optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+  optionsSuccessStatus: 200,
 };
 
 app.use(cors(corsOptions));
 
 app.use("/login", login);
-app.use("/worker", authenticateUser, worker); // DAJ NAZAJ authenticateUser
-app.use("/project", authenticateUser, project); // DAJ NAZAJ authenticateUser
-app.use("/workplace", authenticateUser, workplace); // DAJ NAZAJ authenticateUser
-app.use("/work", authenticateUser, work); // DAJ NAZAJ authenticateUser
+app.use("/worker", authenticateUser, worker);
+app.use("/project", authenticateUser, project);
+app.use("/workplace", authenticateUser, workplace);
+app.use("/work", authenticateUser, work);
 
 app.use(notFound);
 

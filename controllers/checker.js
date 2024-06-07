@@ -10,7 +10,7 @@ async function checkName(name) {
       console.log("Connection established");
 
       connection.query(
-        "SELECT ime, email FROM delavec WHERE ime = ?",
+        "SELECT ime, email, status FROM delavec WHERE ime = ?",
         [name],
         (err, result) => {
           if (err) {
