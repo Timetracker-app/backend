@@ -120,7 +120,7 @@ const addWorker = async (req, res) => {
             }
             console.log("Connection established");
             connection.query(
-              "INSERT INTO delavec (ime, priimek, email, geslo, role) VALUES (?, ?, ?, ?, ?, ?)",
+              "INSERT INTO delavec (ime, priimek, email, geslo, role, status) VALUES (?, ?, ?, ?, ?, ?)",
               [
                 data.name,
                 data.lastname,
