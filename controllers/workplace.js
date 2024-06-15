@@ -90,7 +90,7 @@ const addWorkplace = async (req, res) => {
   const userRole = req.user.role;
 
   if (userRole === "admin") {
-    if (workplaceID) {
+    if (data.workplaceID) {
       if (data.workplaceID && (data.status === 0 || data.status === 1)) {
         const freeID = await checkWorkplace(data.workplaceID);
         if (freeID.length === 0) {

@@ -16,9 +16,9 @@ const work = require("./routes/work");
 app.use(express.json());
 
 const corsOptions = {
-  origin: "http://localhost:5173", // frontend
+  origin: true, // frontend
   methods: ["GET", "POST", "PUT", "DELETE"],
-  optionsSuccessStatus: 200,
+  //optionsSuccessStatus: 200,
 };
 
 app.use(cors(corsOptions));

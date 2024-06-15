@@ -63,7 +63,7 @@ const getWorks = async (req, res) => {
       });
     } else {
       console.log("Forbidden");
-      res.status(403).json("Forbidden");
+      res.status(403).json("Forbidden a");
     }
   } else {
     res.status(400).json("Bad request");
@@ -155,6 +155,7 @@ const getWork = async (req, res) => {
 };
 
 const addWork = async (req, res) => {
+  console.log(req.body);
   const data = {
     worker: req.body.ime,
     project: req.body.projekt,
@@ -162,7 +163,6 @@ const addWork = async (req, res) => {
     start_time: req.body.zacetni_cas,
     end_time: req.body.koncni_cas,
   };
-  console.log(data);
 
   if (
     data.worker &&
@@ -217,6 +217,9 @@ const updateWork = async (req, res) => {
     end_time: req.body.koncni_cas,
   };
   const { IDdela: workID } = req.params;
+
+  console.log(data);
+  console.log(workID);
 
   if (
     workID &&
