@@ -10,9 +10,9 @@ const {
 } = require("../controllers/project");
 
 router.get("/", getAllProjects);
-router.get("/:projekt", getProject);
+router.get("/:project", getProject);
 router.post("/", addProject);
-router.put("/:projekt", updateProject);
-router.delete("/:projekt", deleteProject);
+router.put("/:project", updateProject);
+router.delete("/:project", deleteProject);
 
 module.exports = router;

@@ -13,10 +13,10 @@ const {
 const checkPassword = require("../middleware/checkPassword");
 
 router.get("/", getAllWorkers);
-router.get("/:ime", getWorker);
+router.get("/:name", getWorker);
 router.post("/", addWorker);
-router.delete("/:ime", deleteWorker);
-router.put("/:ime", updateWorker);
-router.put("/change-password/:ime", checkPassword, changePassword);
+router.delete("/:name", deleteWorker);
+router.put("/:name", updateWorker);
+router.put("/change-password/:name", checkPassword, changePassword);
 
 module.exports = router;

@@ -4,9 +4,9 @@ const bcrypt = require("bcryptjs");
 
 const checkPassword = async (req, res, next) => {
   const data = {
-    password: req.body.geslo,
+    password: req.body.password,
   };
-  const { ime: name } = req.params;
+  const { name: name } = req.params;
 
   if (name && data.password) {
     try {
@@ -18,7 +18,7 @@ const checkPassword = async (req, res, next) => {
           }
           console.log("Connection established");
           connection.query(
-            "SELECT geslo FROM delavec WHERE ime = ?",
+            "SELECT password FROM worker WHERE name = ?",
             [name],
             (err, result) => {
               if (err) {
@@ -39,7 +39,7 @@ const checkPassword = async (req, res, next) => {
       });
 
       if (output.length !== 0) {
-        const isMatch = await bcrypt.compare(data.password, output[0].geslo);
+        const isMatch = await bcrypt.compare(data.password, output[0].password);
         if (isMatch) {
           console.log("Passwords match!");
           next();

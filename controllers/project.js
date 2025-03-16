@@ -12,7 +12,7 @@ const getAllProjects = async (req, res) => {
     }
     console.log("Connection established");
     connection.query(
-      "SELECT projekt, cas, status FROM narocilo",
+      "SELECT name, time, status FROM project",
       (err, result) => {
         if (err) {
           console.log("Server error");
@@ -34,7 +34,7 @@ const getAllProjects = async (req, res) => {
 };
 
 const getProject = async (req, res) => {
-  const { projekt: projectID } = req.params;
+  const { project: projectID } = req.params;
 
   const userRole = req.user.role;
 
@@ -47,7 +47,7 @@ const getProject = async (req, res) => {
         }
         console.log("Connection established");
         connection.query(
-          "SELECT * FROM narocilo WHERE projekt = ?",
+          "SELECT * FROM project WHERE name = ?",
           [projectID],
           (err, result) => {
             if (err) {
@@ -81,7 +81,7 @@ const getProject = async (req, res) => {
 
 const addProject = async (req, res) => {
   const data = {
-    projectID: req.body.projekt,
+    projectID: req.body.project,
     status: req.body.status,
   };
   console.log(data);
@@ -98,7 +98,7 @@ const addProject = async (req, res) => {
           }
           console.log("Connection established");
           connection.query(
-            "INSERT INTO narocilo (projekt, status) VALUES (?, ?)",
+            "INSERT INTO project (name, status) VALUES (?, ?)",
             [data.projectID, data.status],
             (err, result) => {
               if (err) {
@@ -133,9 +133,9 @@ const addProject = async (req, res) => {
 const updateProject = async (req, res) => {
   const data = {
     status: req.body.status,
-    time: req.body.cas,
+    time: req.body.time,
   };
-  const { projekt: projectID } = req.params;
+  const { project: projectID } = req.params;
   const userRole = req.user.role;
 
   if (userRole === "admin") {
@@ -153,7 +153,7 @@ const updateProject = async (req, res) => {
           }
           console.log("Connection established");
           connection.query(
-            "UPDATE narocilo SET status = ?, cas = ? WHERE projekt = ?",
+            "UPDATE project SET status = ?, time = ? WHERE name = ?",
             [data.status, data.time, projectID],
             (err, result) => {
               if (err) {
@@ -186,7 +186,7 @@ const updateProject = async (req, res) => {
 };
 
 const deleteProject = async (req, res) => {
-  const { projekt: projectID } = req.params;
+  const { project: projectID } = req.params;
 
   const userRole = req.user.role;
 
@@ -201,7 +201,7 @@ const deleteProject = async (req, res) => {
           }
           console.log("Connection established");
           connection.query(
-            "DELETE FROM narocilo WHERE projekt = ?",
+            "DELETE FROM project WHERE name = ?",
             [projectID],
             (err, result) => {
               if (err) {

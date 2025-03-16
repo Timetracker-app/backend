@@ -7,8 +7,8 @@ const getWorks = async (req, res) => {
   const starttime = req.query.starttime;
   const endtime = req.query.endtime;
 
-  const userRole = req.user.role;
-  const userName = req.user.userName;
+  //const userRole = req.user.role;
+  //const userName = req.user.userName;
 
   if (
     typeof worker === "string" &&
@@ -17,55 +17,56 @@ const getWorks = async (req, res) => {
     typeof starttime === "string" &&
     typeof endtime === "string"
   ) {
-    if (userRole === "admin" || userName === worker) {
-      connectDB.getConnection((err, connection) => {
-        if (err) {
-          console.log("Cannot connect to database");
-          throw err;
-        }
-        connection.query(
-          "SELECT * FROM delo WHERE (ime = ? OR ? = '') AND (projekt = ? OR ? = '') AND (stroj = ? OR ? = '') AND (zacetni_cas >= STR_TO_DATE(?, '%Y-%m-%d %H:%i:%s') OR ? = '') AND (zacetni_cas <= STR_TO_DATE(?, '%Y-%m-%d %H:%i:%s') OR ? = '');",
-          [
-            worker,
-            worker,
-            project,
-            project,
-            workplace,
-            workplace,
-            starttime,
-            starttime,
-            endtime,
-            endtime,
-          ],
-          (err, result) => {
+    //if (userRole === "admin" || userName === worker) {
+    connectDB.getConnection((err, connection) => {
+      if (err) {
+        console.log("Cannot connect to database");
+        throw err;
+      }
+      connection.query(
+        "SELECT * FROM work WHERE (name = ? OR ? = '') AND (project = ? OR ? = '') AND (workplace = ? OR ? = '') AND (start_time >= STR_TO_DATE(?, '%Y-%m-%d %H:%i:%s') OR ? = '') AND (start_time <= STR_TO_DATE(?, '%Y-%m-%d %H:%i:%s') OR ? = '');",
+        [
+          worker,
+          worker,
+          project,
+          project,
+          workplace,
+          workplace,
+          starttime,
+          starttime,
+          endtime,
+          endtime,
+        ],
+        (err, result) => {
+          if (err) {
+            console.log("Server error");
+            res.status(500);
+            throw err;
+          }
+
+          if (result.length === 0) {
+            res.status(404).json("Not found");
+          } else {
+            console.log("Connection established");
+            console.log(result);
+            res.status(200).json({ result });
+
+            connection.release();
             if (err) {
-              console.log("Server error");
-              res.status(500);
+              console.log("Cannot release connection to database");
               throw err;
             }
-
-            if (result.length === 0) {
-              res.status(404).json("Not found");
-            } else {
-              console.log("Connection established");
-              console.log(result);
-              res.status(200).json({ result });
-
-              connection.release();
-              if (err) {
-                console.log("Cannot release connection to database");
-                throw err;
-              }
-              console.log("Connection released.");
-            }
+            console.log("Connection released.");
           }
-        );
-      });
-    } else {
-      console.log("Forbidden");
-      res.status(403).json("Forbidden a");
-    }
-  } else {
+        }
+      );
+    });
+  } //else {
+  //console.log("Forbidden");
+  //res.status(403).json("Forbidden a");
+  //}
+  //}
+  else {
     res.status(400).json("Bad request");
   }
 };

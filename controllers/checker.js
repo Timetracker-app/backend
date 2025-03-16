@@ -10,7 +10,7 @@ async function checkName(name) {
       console.log("Connection established");
 
       connection.query(
-        "SELECT ime, email, status FROM delavec WHERE ime = ?",
+        "SELECT name, email, status FROM worker WHERE name = ?",
         [name],
         (err, result) => {
           if (err) {
@@ -37,7 +37,7 @@ async function checkEmail(email) {
       console.log("Connection established");
 
       connection.query(
-        "SELECT email FROM delavec WHERE email = ?",
+        "SELECT email FROM worker WHERE email = ?",
         [email],
         (err, result) => {
           if (err) {
@@ -91,7 +91,7 @@ async function checkProject(projectID) {
       console.log("Connection established");
 
       connection.query(
-        "SELECT projekt, status FROM narocilo WHERE projekt = ?",
+        "SELECT name, status FROM project WHERE name = ?",
         [projectID],
         (err, result) => {
           if (err) {

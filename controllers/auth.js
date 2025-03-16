@@ -18,7 +18,7 @@ const login = async (req, res) => {
           }
           console.log("Connection established");
           connection.query(
-            "SELECT ime, priimek, email, geslo, role FROM delavec WHERE email = ?",
+            "SELECT name, lastname, email, password, role FROM worker WHERE email = ?",
             [data.email],
             (err, result) => {
               if (err) {
@@ -41,19 +41,19 @@ const login = async (req, res) => {
       if (output.length === 0) {
         res.status(401).json("Invalid Credentials");
       }
-      const isMatch = await bcrypt.compare(data.password, output[0].geslo);
+      const isMatch = await bcrypt.compare(data.password, output[0].password);
       if (!isMatch) {
         res.status(401).json("Invalid Credentials");
       }
       console.log("Passwords match!");
 
       const token = jwt.sign(
-        { userName: output[0].ime, role: output[0].role },
+        { userName: output[0].name, role: output[0].role },
         process.env.JWT_SECRET,
         { expiresIn: process.env.JWT_LIFETIME }
       );
 
-      res.status(200).json({ user: output[0].ime, token });
+      res.status(200).json({ user: output[0].name, token });
     } catch (error) {
       console.log("Error login");
     }

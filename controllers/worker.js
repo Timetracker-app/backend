@@ -6,6 +6,7 @@ const checkEmail = require("./checker").checkEmail;
 const prepareResponse = require("./tools").prepareResponse;
 
 const getAllWorkers = async (req, res) => {
+  console.log(req);
   const userRole = req.user.role;
 
   if (userRole === "admin") {
@@ -16,7 +17,7 @@ const getAllWorkers = async (req, res) => {
       }
       console.log("Connection established");
       connection.query(
-        "SELECT ime, priimek, email, role, status FROM delavec",
+        "SELECT name, lastname, email, role, status FROM worker",
         (err, result) => {
           if (err) {
             console.log("Server error");
@@ -42,7 +43,8 @@ const getAllWorkers = async (req, res) => {
 };
 
 const getWorker = async (req, res) => {
-  const { ime: name } = req.params;
+  console.log(req.params);
+  const { name: name } = req.params;
   const userRole = req.user.role;
   const userName = req.user.userName;
 
@@ -56,7 +58,7 @@ const getWorker = async (req, res) => {
       }
       console.log("Connection established");
       connection.query(
-        "SELECT ime, priimek, email, role, status FROM delavec WHERE ime = ?",
+        "SELECT name, lastname, email, role, status FROM worker WHERE name = ?",
         [name],
         (err, result) => {
           if (err) {
@@ -89,10 +91,10 @@ const getWorker = async (req, res) => {
 
 const addWorker = async (req, res) => {
   const data = {
-    name: req.body.ime,
-    lastname: req.body.priimek,
+    name: req.body.name,
+    lastname: req.body.lastname,
     email: req.body.email,
-    password: req.body.geslo,
+    password: req.body.password,
     role: req.body.role,
     status: req.body.status,
   };
@@ -120,7 +122,7 @@ const addWorker = async (req, res) => {
             }
             console.log("Connection established");
             connection.query(
-              "INSERT INTO delavec (ime, priimek, email, geslo, role, status) VALUES (?, ?, ?, ?, ?, ?)",
+              "INSERT INTO worker (name, lastname, email, password, role, status) VALUES (?, ?, ?, ?, ?, ?)",
               [
                 data.name,
                 data.lastname,
@@ -164,7 +166,7 @@ const addWorker = async (req, res) => {
 };
 
 const deleteWorker = async (req, res) => {
-  const { ime: name } = req.params;
+  const { name: name } = req.params;
   const userRole = req.user.role;
 
   if (userRole === "admin") {
@@ -178,7 +180,7 @@ const deleteWorker = async (req, res) => {
           }
           console.log("Connection established");
           connection.query(
-            "DELETE FROM delavec WHERE ime = ?",
+            "DELETE FROM worker WHERE name = ?",
             [name],
             (err, result) => {
               if (err) {
@@ -213,12 +215,12 @@ const deleteWorker = async (req, res) => {
 
 const updateWorker = async (req, res) => {
   const data = {
-    lastname: req.body.priimek,
+    lastname: req.body.lastname,
     email: req.body.email,
     role: req.body.role,
     status: req.body.status,
   };
-  const { ime: name } = req.params;
+  const { name: name } = req.params;
   const userRole = req.user.role;
   const userName = req.user.userName;
 
@@ -247,7 +249,7 @@ const updateWorker = async (req, res) => {
             }
             console.log("Connection established");
             connection.query(
-              "UPDATE delavec SET priimek = ?, email = ?, role = ?, status = ? WHERE ime = ?",
+              "UPDATE worker SET lastname = ?, email = ?, role = ?, status = ? WHERE name = ?",
               [data.lastname, data.email, role, data.status, name],
               (err, result) => {
                 if (err) {
@@ -285,10 +287,10 @@ const updateWorker = async (req, res) => {
 
 const changePassword = async (req, res) => {
   const data = {
-    password: req.body.geslo,
-    newPassword: req.body.novoGeslo,
+    password: req.body.password,
+    newPassword: req.body.new_password,
   };
-  const { ime: name } = req.params;
+  const { name: name } = req.params;
 
   const userName = req.user.userName;
 
@@ -304,7 +306,7 @@ const changePassword = async (req, res) => {
         }
         console.log("Connection established");
         connection.query(
-          "UPDATE delavec SET geslo = ? WHERE ime = ?",
+          "UPDATE worker SET password = ? WHERE name = ?",
           [hashedPass, name],
           (err, result) => {
             if (err) {

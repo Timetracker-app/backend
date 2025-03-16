@@ -26,8 +26,8 @@ app.use(cors(corsOptions));
 app.use("/login", login);
 app.use("/worker", authenticateUser, worker);
 app.use("/project", authenticateUser, project);
-app.use("/workplace", authenticateUser, workplace);
-app.use("/work", authenticateUser, work);
+app.use("/workplace", workplace); //authenticateUser,
+app.use("/work", work); //authenticateUser,
 
 app.use(notFound);
 
