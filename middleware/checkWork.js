@@ -6,11 +6,11 @@ const prepareResponse = require("../controllers/tools").prepareResponse;
 
 const checkAddWork = async (req, res, next) => {
   const data = {
-    worker: req.body.ime,
-    project: req.body.projekt,
-    workplace: req.body.stroj,
-    start_time: req.body.zacetni_cas,
-    end_time: req.body.koncni_cas,
+    worker: req.body.worker,
+    project: req.body.project,
+    workplace: req.body.workplace,
+    start_time: req.body.start_time,
+    end_time: req.body.end_time,
   };
   console.log(data);
 
@@ -77,13 +77,13 @@ const checkAddWork = async (req, res, next) => {
 
 const checkUpdateWork = async (req, res, next) => {
   const data = {
-    worker: req.body.ime,
-    project: req.body.projekt,
-    workplace: req.body.stroj,
-    start_time: req.body.zacetni_cas,
-    end_time: req.body.koncni_cas,
+    worker: req.body.worker,
+    project: req.body.project,
+    workplace: req.body.workplace,
+    start_time: req.body.start_time,
+    end_time: req.body.end_time,
   };
-  const { IDdela: workID } = req.params;
+  const { workID: workID } = req.params;
 
   const userRole = req.user.role;
   const userName = req.user.userName;
@@ -101,7 +101,7 @@ const checkUpdateWork = async (req, res, next) => {
     const projectCheck = await checkProject(data.project);
 
     if (work.length !== 0) {
-      if (userRole === "admin" || work[0].ime === userName) {
+      if (userRole === "admin" || work[0].name === userName) {
         if (workerID.length !== 0) {
           if (workplaceCheck.length !== 0) {
             if (projectCheck.length !== 0) {
@@ -133,7 +133,7 @@ const checkUpdateWork = async (req, res, next) => {
 };
 
 const checkDeleteWork = async (req, res, next) => {
-  const { IDdela: workID } = req.params;
+  const { workID: workID } = req.params;
 
   const userRole = req.user.role;
   const userName = req.user.userName;
@@ -142,7 +142,7 @@ const checkDeleteWork = async (req, res, next) => {
     const work = await checkWorkID(workID);
 
     if (work.length !== 0) {
-      if (userRole === "admin" || work[0].ime === userName) {
+      if (userRole === "admin" || work[0].name === userName) {
         next();
       } else {
         console.log("Forbidden");

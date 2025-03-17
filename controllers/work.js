@@ -7,8 +7,8 @@ const getWorks = async (req, res) => {
   const starttime = req.query.starttime;
   const endtime = req.query.endtime;
 
-  //const userRole = req.user.role;
-  //const userName = req.user.userName;
+  const userRole = req.user.role;
+  const userName = req.user.userName;
 
   if (
     typeof worker === "string" &&
@@ -17,62 +17,61 @@ const getWorks = async (req, res) => {
     typeof starttime === "string" &&
     typeof endtime === "string"
   ) {
-    //if (userRole === "admin" || userName === worker) {
-    connectDB.getConnection((err, connection) => {
-      if (err) {
-        console.log("Cannot connect to database");
-        throw err;
-      }
-      connection.query(
-        "SELECT * FROM work WHERE (name = ? OR ? = '') AND (project = ? OR ? = '') AND (workplace = ? OR ? = '') AND (start_time >= STR_TO_DATE(?, '%Y-%m-%d %H:%i:%s') OR ? = '') AND (start_time <= STR_TO_DATE(?, '%Y-%m-%d %H:%i:%s') OR ? = '');",
-        [
-          worker,
-          worker,
-          project,
-          project,
-          workplace,
-          workplace,
-          starttime,
-          starttime,
-          endtime,
-          endtime,
-        ],
-        (err, result) => {
-          if (err) {
-            console.log("Server error");
-            res.status(500);
-            throw err;
-          }
-
-          if (result.length === 0) {
-            res.status(404).json("Not found");
-          } else {
-            console.log("Connection established");
-            console.log(result);
-            res.status(200).json({ result });
-
-            connection.release();
+    if (userRole === "admin" || userName === worker) {
+      connectDB.getConnection((err, connection) => {
+        if (err) {
+          console.log("Cannot connect to database");
+          throw err;
+        }
+        connection.query(
+          "SELECT * FROM work WHERE (name = ? OR ? = '') AND (project = ? OR ? = '') AND (workplace = ? OR ? = '') AND (start_time >= STR_TO_DATE(?, '%Y-%m-%d %H:%i:%s') OR ? = '') AND (start_time <= STR_TO_DATE(?, '%Y-%m-%d %H:%i:%s') OR ? = '');",
+          [
+            worker,
+            worker,
+            project,
+            project,
+            workplace,
+            workplace,
+            starttime,
+            starttime,
+            endtime,
+            endtime,
+          ],
+          (err, result) => {
             if (err) {
-              console.log("Cannot release connection to database");
+              console.log("Server error");
+              res.status(500);
               throw err;
             }
-            console.log("Connection released.");
+
+            if (result.length === 0) {
+              res.status(404).json("Not found");
+            } else {
+              console.log("Connection established");
+              console.log(result);
+              res.status(200).json({ result });
+
+              connection.release();
+              if (err) {
+                console.log("Cannot release connection to database");
+                throw err;
+              }
+              console.log("Connection released.");
+            }
           }
-        }
-      );
-    });
-  } //else {
-  //console.log("Forbidden");
-  //res.status(403).json("Forbidden a");
-  //}
-  //}
-  else {
+        );
+      });
+    } else {
+      console.log("Forbidden");
+      res.status(403).json("Forbidden a");
+    }
+  } else {
     res.status(400).json("Bad request");
   }
 };
 
 const getWork = async (req, res) => {
-  const { IDdela: workID } = req.params;
+  const { workID: workID } = req.params;
 
   const userRole = req.user.role;
   const userName = req.user.userName;
@@ -87,7 +86,7 @@ const getWork = async (req, res) => {
           throw err;
         }
         connection.query(
-          "SELECT * FROM delo WHERE IDdela = ?",
+          "SELECT * FROM work WHERE workID = ?",
           [workID],
           (err, result) => {
             if (err) {
@@ -120,7 +119,7 @@ const getWork = async (req, res) => {
           throw err;
         }
         connection.query(
-          "SELECT * FROM delo WHERE IDdela = ? AND ime = ?",
+          "SELECT * FROM work WHERE workID = ? AND name = ?",
           [workID, userName],
           (err, result) => {
             if (err) {
@@ -158,11 +157,11 @@ const getWork = async (req, res) => {
 const addWork = async (req, res) => {
   console.log(req.body);
   const data = {
-    worker: req.body.ime,
-    project: req.body.projekt,
-    workplace: req.body.stroj,
-    start_time: req.body.zacetni_cas,
-    end_time: req.body.koncni_cas,
+    worker: req.body.worker,
+    project: req.body.project,
+    workplace: req.body.workplace,
+    start_time: req.body.start_time,
+    end_time: req.body.end_time,
   };
 
   if (
@@ -179,7 +178,7 @@ const addWork = async (req, res) => {
       }
       console.log("Connection established");
       connection.query(
-        "INSERT INTO delo (ime, projekt, stroj, zacetni_cas, koncni_cas) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO work (name, project, workplace, start_time, end_time) VALUES (?, ?, ?, ?, ?)",
         [
           data.worker,
           data.project,
@@ -211,13 +210,13 @@ const addWork = async (req, res) => {
 
 const updateWork = async (req, res) => {
   const data = {
-    worker: req.body.ime,
-    project: req.body.projekt,
-    workplace: req.body.stroj,
-    start_time: req.body.zacetni_cas,
-    end_time: req.body.koncni_cas,
+    worker: req.body.worker,
+    project: req.body.project,
+    workplace: req.body.workplace,
+    start_time: req.body.start_time,
+    end_time: req.body.end_time,
   };
-  const { IDdela: workID } = req.params;
+  const { workID: workID } = req.params;
 
   console.log(data);
   console.log(workID);
@@ -237,7 +236,7 @@ const updateWork = async (req, res) => {
       }
       console.log("Connection established");
       connection.query(
-        "UPDATE delo SET ime = ?, projekt = ?, stroj = ?, zacetni_cas = ?, koncni_cas = ? WHERE IDdela = ?",
+        "UPDATE work SET name = ?, project = ?, workplace = ?, start_time = ?, end_time = ? WHERE workID = ?",
         [
           data.worker,
           data.project,
@@ -269,7 +268,7 @@ const updateWork = async (req, res) => {
 };
 
 const deleteWork = async (req, res) => {
-  const workID = req.params.IDdela;
+  const workID = req.params.workID;
 
   if (workID) {
     connectDB.getConnection((err, connection) => {
@@ -279,7 +278,7 @@ const deleteWork = async (req, res) => {
       }
       console.log("Connection established");
       connection.query(
-        "DELETE FROM delo WHERE IDdela = ?",
+        "DELETE FROM work WHERE workID = ?",
         [workID],
         (err, result) => {
           if (err) {

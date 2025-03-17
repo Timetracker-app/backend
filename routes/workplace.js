@@ -10,9 +10,9 @@ const {
 } = require("../controllers/workplace");
 
 router.get("/", getAllWorkplaces);
-router.get("/:stroj", getWorkplace);
+router.get("/:name", getWorkplace);
 router.post("/", addWorkplace);
-router.put("/:stroj", updateWorkplace);
-router.delete("/:stroj", deleteWorkplace);
+router.put("/:name", updateWorkplace);
+router.delete("/:name", deleteWorkplace);
 
 module.exports = router;

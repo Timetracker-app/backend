@@ -11,30 +11,27 @@ const getAllProjects = async (req, res) => {
       throw err;
     }
     console.log("Connection established");
-    connection.query(
-      "SELECT name, time, status FROM project",
-      (err, result) => {
-        if (err) {
-          console.log("Server error");
-          res.status(500);
-          throw err;
-        }
-        console.log(result);
-        res.status(200).json({ result });
-
-        connection.release();
-        if (err) {
-          console.log("Can not release connection to database");
-          throw err;
-        }
-        console.log("Connection released.");
+    connection.query("SELECT * FROM project", (err, result) => {
+      if (err) {
+        console.log("Server error");
+        res.status(500);
+        throw err;
       }
-    );
+      console.log(result);
+      res.status(200).json({ result });
+
+      connection.release();
+      if (err) {
+        console.log("Can not release connection to database");
+        throw err;
+      }
+      console.log("Connection released.");
+    });
   });
 };
 
 const getProject = async (req, res) => {
-  const { project: projectID } = req.params;
+  const { name: projectID } = req.params;
 
   const userRole = req.user.role;
 
@@ -81,7 +78,7 @@ const getProject = async (req, res) => {
 
 const addProject = async (req, res) => {
   const data = {
-    projectID: req.body.project,
+    projectID: req.body.name,
     status: req.body.status,
   };
   console.log(data);
@@ -135,7 +132,7 @@ const updateProject = async (req, res) => {
     status: req.body.status,
     time: req.body.time,
   };
-  const { project: projectID } = req.params;
+  const { name: projectID } = req.params;
   const userRole = req.user.role;
 
   if (userRole === "admin") {
@@ -186,7 +183,7 @@ const updateProject = async (req, res) => {
 };
 
 const deleteProject = async (req, res) => {
-  const { project: projectID } = req.params;
+  const { name: projectID } = req.params;
 
   const userRole = req.user.role;
 

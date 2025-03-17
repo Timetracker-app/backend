@@ -11,7 +11,7 @@ const getAllWorkplaces = async (req, res) => {
       throw err;
     }
     connection.query(
-      "SELECT stroj, cas, status FROM delovno_mesto",
+      "SELECT name, time, status FROM workplace",
       (err, result) => {
         if (err) {
           console.log("Server error");
@@ -34,7 +34,7 @@ const getAllWorkplaces = async (req, res) => {
 };
 
 const getWorkplace = async (req, res) => {
-  const { stroj: workplaceID } = req.params;
+  const { name: workplaceID } = req.params;
 
   const userRole = req.user.role;
 
@@ -47,7 +47,7 @@ const getWorkplace = async (req, res) => {
         }
         console.log("Connection established");
         connection.query(
-          "SELECT * FROM delovno_mesto WHERE stroj = ?",
+          "SELECT * FROM workplace WHERE name = ?",
           [workplaceID],
           (err, result) => {
             if (err) {
@@ -83,7 +83,7 @@ const addWorkplace = async (req, res) => {
   console.log(req.headers);
   console.log(req.body);
   const data = {
-    workplaceID: req.body.stroj,
+    workplaceID: req.body.name,
     status: req.body.status,
   };
   console.log(data);
@@ -101,7 +101,7 @@ const addWorkplace = async (req, res) => {
             }
             console.log("Connection established");
             connection.query(
-              "INSERT INTO delovno_mesto (stroj, status) VALUES (?,?)",
+              "INSERT INTO workplace (name, status) VALUES (?,?)",
               [data.workplaceID, data.status],
               (err, result) => {
                 if (err) {
@@ -139,9 +139,9 @@ const addWorkplace = async (req, res) => {
 const updateWorkplace = async (req, res) => {
   const data = {
     status: req.body.status,
-    time: req.body.cas,
+    time: req.body.time,
   };
-  const { stroj: workplaceID } = req.params;
+  const { name: workplaceID } = req.params;
   console.log(workplaceID, data);
   const userRole = req.user.role;
 
@@ -160,7 +160,7 @@ const updateWorkplace = async (req, res) => {
           }
           console.log("Connection established");
           connection.query(
-            "UPDATE delovno_mesto SET status = ?, cas = ? WHERE stroj = ?",
+            "UPDATE workplace SET status = ?, time = ? WHERE name = ?",
             [data.status, data.time, workplaceID],
             (err, result) => {
               if (err) {
@@ -193,7 +193,7 @@ const updateWorkplace = async (req, res) => {
 };
 
 const deleteWorkplace = async (req, res) => {
-  const { stroj: workplaceID } = req.params;
+  const { name: workplaceID } = req.params;
 
   const userRole = req.user.role;
 
@@ -208,7 +208,7 @@ const deleteWorkplace = async (req, res) => {
           }
           console.log("Connection established");
           connection.query(
-            "DELETE FROM delovno_mesto WHERE stroj = ?",
+            "DELETE FROM workplace WHERE name = ?",
             [workplaceID],
             (err, result) => {
               if (err) {

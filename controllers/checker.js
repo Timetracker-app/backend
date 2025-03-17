@@ -64,7 +64,7 @@ async function checkWorkplace(workplaceID) {
       console.log("Connection established");
 
       connection.query(
-        "SELECT stroj, status FROM delovno_mesto WHERE stroj = ?",
+        "SELECT name, status FROM workplace WHERE name = ?",
         [workplaceID],
         (err, result) => {
           if (err) {
@@ -118,7 +118,7 @@ async function checkWorkID(workID) {
       console.log("Connection established");
 
       connection.query(
-        "SELECT * FROM delo WHERE IDdela = ?",
+        "SELECT * FROM work WHERE workID = ?",
         [workID],
         (err, result) => {
           if (err) {
